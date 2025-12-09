@@ -1,4 +1,5 @@
 import Config
+config :ash, policies: [show_policy_breakdowns?: true]
 
 # Configure your database
 config :cheerful_donor, CheerfulDonor.Repo,
@@ -68,7 +69,7 @@ config :cheerful_donor, CheerfulDonorWeb.Endpoint,
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :cheerful_donor, dev_routes: true
+config :cheerful_donor, dev_routes: true, token_signing_secret: "MdiAzp0a6ELGr59vruhQTWF8vuCJkC3l"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"

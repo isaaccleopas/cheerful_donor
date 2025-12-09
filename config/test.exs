@@ -1,4 +1,8 @@
 import Config
+config :cheerful_donor, Oban, testing: :manual
+config :cheerful_donor, token_signing_secret: "n+Oh4ix+GwF4BYqyVsOBcB1zhDKRasDX"
+config :bcrypt_elixir, log_rounds: 1
+config :ash, policies: [show_policy_breakdowns?: true], disable_async?: true
 
 # Configure your database
 #

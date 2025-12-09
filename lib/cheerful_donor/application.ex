@@ -11,11 +11,17 @@ defmodule CheerfulDonor.Application do
       CheerfulDonorWeb.Telemetry,
       CheerfulDonor.Repo,
       {DNSCluster, query: Application.get_env(:cheerful_donor, :dns_cluster_query) || :ignore},
+      {Oban,
+       AshOban.config(
+         Application.fetch_env!(:cheerful_donor, :ash_domains),
+         Application.fetch_env!(:cheerful_donor, Oban)
+       )},
       {Phoenix.PubSub, name: CheerfulDonor.PubSub},
       # Start a worker by calling: CheerfulDonor.Worker.start_link(arg)
       # {CheerfulDonor.Worker, arg},
       # Start to serve requests, typically the last entry
-      CheerfulDonorWeb.Endpoint
+      CheerfulDonorWeb.Endpoint,
+      {AshAuthentication.Supervisor, [otp_app: :cheerful_donor]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
