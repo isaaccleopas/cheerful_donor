@@ -10,7 +10,20 @@ defmodule CheerfulDonor.Payouts.Payout do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy,
+    create: [
+      :amount,
+      :status,
+      :paid_at,
+      :reference
+    ],
+    update: [
+      :amount,
+      :status,
+      :paid_at,
+      :reference
+    ]
+  ]
   end
 
   attributes do
@@ -23,11 +36,13 @@ defmodule CheerfulDonor.Payouts.Payout do
 
     attribute :status, :atom do
       allow_nil? false
+      public? true
+      default :pending
       constraints one_of: CheerfulDonor.Enums.payout_statuses()
     end
 
-    attribute :paid_at, :utc_datetime
-    attribute :reference, :string
+    attribute :paid_at, :utc_datetime, public?: true
+    attribute :reference, :string, public?: true
     timestamps()
   end
 

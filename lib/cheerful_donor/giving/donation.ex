@@ -34,6 +34,8 @@ defmodule CheerfulDonor.Giving.Donation do
 
     attribute :status, :atom do
       allow_nil? false
+      public? true
+      default :pending
       constraints one_of: CheerfulDonor.Enums.donation_statuses()
     end
 

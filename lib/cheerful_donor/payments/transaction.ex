@@ -10,7 +10,26 @@ defmodule CheerfulDonor.Payments.Transaction do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy,
+    create: [
+      :amount,
+      :currency,
+      :status,
+      :reference,
+      :channel,
+      :fees,
+      :paid_at
+    ],
+    update: [
+      :amount,
+      :currency,
+      :status,
+      :reference,
+      :channel,
+      :fees,
+      :paid_at
+    ]
+  ]
   end
 
   attributes do
@@ -18,24 +37,30 @@ defmodule CheerfulDonor.Payments.Transaction do
 
     attribute :amount, :integer do
       allow_nil? false
+      public? true
     end
 
     attribute :currency, :string do
       allow_nil? false
+      public? true
+      default "NGN"
     end
 
     attribute :status, :atom do
       allow_nil? false
+      public? true
+      default :pending
       constraints one_of: CheerfulDonor.Enums.transaction_statuses()
     end
 
     attribute :reference, :string do
       allow_nil? false
+      public? true
     end
 
-    attribute :channel, :string
-    attribute :fees, :integer
-    attribute :paid_at, :utc_datetime
+    attribute :channel, :string, public?: true
+    attribute :fees, :integer, public?: true
+    attribute :paid_at, :utc_datetime, public?: true
     timestamps()
   end
 

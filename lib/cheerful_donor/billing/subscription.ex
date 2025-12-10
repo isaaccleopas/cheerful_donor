@@ -10,7 +10,20 @@ defmodule CheerfulDonor.Billing.Subscription do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy,
+    create: [
+      :amount,
+      :interval,
+      :status,
+      :next_charge_at
+    ],
+    update: [
+      :amount,
+      :interval,
+      :status,
+      :next_charge_at
+    ]
+  ]
   end
 
   attributes do
@@ -18,19 +31,23 @@ defmodule CheerfulDonor.Billing.Subscription do
 
     attribute :amount, :integer do
       allow_nil? false
+      public? true
     end
 
     attribute :interval, :atom do
       allow_nil? false
+      public? true
       constraints one_of: CheerfulDonor.Enums.subscription_intervals()
     end
 
     attribute :status, :atom do
       allow_nil? false
+      public? true
+      default :active
       constraints one_of: CheerfulDonor.Enums.subscription_statuses()
     end
 
-    attribute :next_charge_at, :utc_datetime
+    attribute :next_charge_at, :utc_datetime, public?: true
     timestamps()
   end
   relationships do

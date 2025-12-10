@@ -10,11 +10,13 @@ defmodule CheerfulDonor.Payouts.BankAccount do
   end
 
   actions do
-    defaults [:read, :destroy, create: [
+    defaults [:read, :destroy,
+    create: [
       :bank_name,
       :account_number,
       :account_name
-    ], update: [
+    ],
+    update: [
       :bank_name,
       :account_number,
       :account_name

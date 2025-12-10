@@ -10,15 +10,18 @@ defmodule CheerfulDonor.Accounts.Donor do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy,
+    create: [:paystack_customer_id, :phone, :address, :is_active],
+    update: [:paystack_customer_id, :phone, :address, :is_active]
+  ]
   end
 
   attributes do
     uuid_primary_key :id
-    attribute :paystack_customer_id, :string
-    attribute :phone, :string
-    attribute :address, :string
-    attribute :is_active, :boolean
+    attribute :paystack_customer_id, :string, public?: true
+    attribute :phone, :string, public?: true
+    attribute :address, :string, public?: true
+    attribute :is_active, :boolean, default: true, public?: true
     timestamps()
   end
 

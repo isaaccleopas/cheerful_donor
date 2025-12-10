@@ -10,7 +10,22 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy,
+    create: [
+      :reference,
+      :amount,
+      :currency,
+      :status,
+      :meta
+    ],
+    update: [
+      :reference,
+      :amount,
+      :currency,
+      :status,
+      :meta
+    ]
+  ]
   end
 
   attributes do
@@ -18,22 +33,27 @@ defmodule CheerfulDonor.Giving.DonationIntent do
 
     attribute :reference, :string do
       allow_nil? false
+      public? true
     end
 
     attribute :amount, :integer do
       allow_nil? false
+      public? true
     end
 
     attribute :currency, :string do
       allow_nil? false
+      public? true
       default "NGN"
     end
 
     attribute :status, :atom do
       allow_nil? false
+      public? true
+      default :pending
       constraints one_of: CheerfulDonor.Enums.donation_statuses()
     end
-    attribute :meta, :map
+    attribute :meta, :map, public?: true
     timestamps()
   end
 

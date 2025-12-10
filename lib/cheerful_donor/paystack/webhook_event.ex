@@ -18,11 +18,12 @@ defmodule CheerfulDonor.Paystack.WebhookEvent do
 
     attribute :event_type, :atom do
       allow_nil? false
+      public? true
       constraints one_of: CheerfulDonor.Enums.paystack_event_types()
     end
 
-    attribute :payload, :map
-    attribute :processed, :boolean, default: false
+    attribute :payload, :map, public?: true
+    attribute :processed, :boolean, default: false, public?: true
     timestamps()
   end
 end
