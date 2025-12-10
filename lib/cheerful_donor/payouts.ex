@@ -3,5 +3,7 @@ defmodule CheerfulDonor.Payouts do
     otp_app: :cheerful_donor
 
   resources do
+    resource CheerfulDonor.Payouts.BankAccount
+    resource CheerfulDonor.Payouts.Payout
   end
 end
