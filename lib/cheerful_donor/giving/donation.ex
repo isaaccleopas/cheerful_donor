@@ -13,9 +13,19 @@ defmodule CheerfulDonor.Giving.Donation do
     defaults [
       :read,
       :destroy,
-      create: [:amount, :currency, :status, :reference, :message],
-      update: [:amount, :currency, :status, :reference, :message]
+      create: [:amount, :currency, :status, :reference, :message, :donor_id, :church_id, :campaign_id, :donation_intent_id],
+      update: [:amount, :amount_paid, :status, :message, :paystack_id]
     ]
+
+    read :get_by_reference do
+      argument :reference, :string, allow_nil?: false
+      filter expr(reference == ^arg(:reference))
+    end
+
+    update :mark_as_paid do
+      accept [:status, :amount_paid, :paystack_id]
+      change set_attribute(:status, :success)
+    end
   end
 
   attributes do
@@ -48,11 +58,14 @@ defmodule CheerfulDonor.Giving.Donation do
       public? true
     end
 
+    attribute :amount_paid, :integer, allow_nil?: true
+    attribute :paystack_id, :string, allow_nil?: true
+
     timestamps()
   end
 
   relationships do
-    belongs_to :donor, CheerfulDonor.Accounts.Donor
+    belongs_to :donor, CheerfulDonor.Accounts.Donor, allow_nil?: true
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
     belongs_to :donation_intent, CheerfulDonor.Giving.DonationIntent do

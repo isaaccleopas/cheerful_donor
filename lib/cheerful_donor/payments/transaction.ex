@@ -18,14 +18,15 @@ defmodule CheerfulDonor.Payments.Transaction do
       :reference,
       :channel,
       :fees,
-      :paid_at
+      :paid_at,
+      :donor_id,
+      :church_id,
+      :subscription_id,
+      :donation_id,
+      :payment_method_id
     ],
     update: [
-      :amount,
-      :currency,
       :status,
-      :reference,
-      :channel,
       :fees,
       :paid_at
     ]
@@ -65,8 +66,8 @@ defmodule CheerfulDonor.Payments.Transaction do
   end
 
   relationships do
-    belongs_to :donor, CheerfulDonor.Accounts.Donor
-    belongs_to :church, CheerfulDonor.Accounts.Church
+    belongs_to :donor, CheerfulDonor.Accounts.Donor, allow_nil?: true
+    belongs_to :church, CheerfulDonor.Accounts.Church, allow_nil?: true
     belongs_to :subscription, CheerfulDonor.Billing.Subscription, allow_nil?: true
     belongs_to :donation, CheerfulDonor.Giving.Donation, allow_nil?: true
     belongs_to :payment_method, CheerfulDonor.Billing.PaymentMethod, allow_nil?: true

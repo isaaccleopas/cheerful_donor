@@ -15,11 +15,12 @@ defmodule CheerfulDonor.Billing.Subscription do
       :amount,
       :interval,
       :status,
-      :next_charge_at
+      :next_charge_at,
+      :donor_id,
+      :payment_method_id,
+      :subscription_code
     ],
     update: [
-      :amount,
-      :interval,
       :status,
       :next_charge_at
     ]
@@ -43,16 +44,16 @@ defmodule CheerfulDonor.Billing.Subscription do
     attribute :status, :atom do
       allow_nil? false
       public? true
-      default :active
+      default :pending
       constraints one_of: CheerfulDonor.Enums.subscription_statuses()
     end
-
+    attribute :subscription_code, :string, public?: true
     attribute :next_charge_at, :utc_datetime, public?: true
     timestamps()
   end
+
   relationships do
     belongs_to :donor, CheerfulDonor.Accounts.Donor
-    belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :payment_method, CheerfulDonor.Billing.PaymentMethod
 
     has_many :transactions, CheerfulDonor.Payments.Transaction

@@ -20,10 +20,10 @@ defmodule CheerfulDonor.Billing.PaymentMethod do
         :exp_month,
         :exp_year,
         :bank,
-        :reusable
+        :reusable,
+        :donor_id
       ],
       update: [
-        :paystack_authorization_code,
         :card_type,
         :last4,
         :exp_month,
@@ -64,13 +64,17 @@ defmodule CheerfulDonor.Billing.PaymentMethod do
 
     attribute :reusable, :boolean do
       public? true
+      allow_nil? false
+      default false
     end
 
     timestamps()
   end
 
   relationships do
-    belongs_to :donor, CheerfulDonor.Accounts.Donor
+    belongs_to :donor, CheerfulDonor.Accounts.Donor do
+      allow_nil? false
+    end
 
     has_many :subscriptions, CheerfulDonor.Billing.Subscription
     has_many :transactions, CheerfulDonor.Payments.Transaction

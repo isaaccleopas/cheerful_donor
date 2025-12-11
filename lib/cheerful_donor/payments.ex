@@ -5,4 +5,7 @@ defmodule CheerfulDonor.Payments do
   resources do
     resource CheerfulDonor.Payments.Transaction
   end
+
+  def create_transaction(attrs),
+    do: Ash.create(Transaction, attrs)
 end

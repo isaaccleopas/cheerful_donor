@@ -11,26 +11,18 @@ defmodule CheerfulDonor.Giving.DonationIntent do
 
   actions do
     defaults [:read, :destroy,
-    create: [
-      :reference,
-      :amount,
-      :currency,
-      :status,
-      :meta
-    ],
-    update: [
-      :reference,
-      :amount,
-      :currency,
-      :status,
-      :meta
-    ]
+    update: [:status, :meta]
   ]
+    create :create do
+      accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :meta, :donor_id, :campaign_id, :church_id]
+    end
   end
 
   attributes do
     uuid_primary_key :id
 
+    attribute :guest_email, :string, public?: true
+    attribute :guest_name, :string, public?: true
     attribute :reference, :string do
       allow_nil? false
       public? true
@@ -58,7 +50,10 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   end
 
   relationships do
-    belongs_to :donor, CheerfulDonor.Accounts.Donor
+    belongs_to :donor, CheerfulDonor.Accounts.Donor do
+      attribute_writable? true
+      allow_nil? true
+    end
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
 

@@ -11,19 +11,9 @@ defmodule CheerfulDonor.Accounts.Church do
 
   actions do
     defaults [:read, :destroy,
-    create: [
-      :name,
-      :email,
-      :phone,
-      :address
-    ],
-    update: [
-      :name,
-      :email,
-      :phone,
-      :address
+      create: [:name, :email, :phone, :address, :user_id],
+      update: [:name, :email, :phone, :address]
     ]
-  ]
   end
 
   attributes do
@@ -41,13 +31,18 @@ defmodule CheerfulDonor.Accounts.Church do
 
     attribute :phone, :string, public?: true
     attribute :address, :string, public?: true
+
     timestamps()
   end
 
   relationships do
-    has_many :donors, CheerfulDonor.Accounts.Donor
+    belongs_to :user, CheerfulDonor.Accounts.User,
+      allow_nil?: true,
+      public?: true
+
     has_many :campaigns, CheerfulDonor.Giving.Campaign
     has_many :donations, CheerfulDonor.Giving.Donation
+    has_many :bank_accounts, CheerfulDonor.Payouts.BankAccount
     has_many :payouts, CheerfulDonor.Payouts.Payout
   end
 end

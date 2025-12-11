@@ -241,10 +241,26 @@ defmodule CheerfulDonor.Accounts.User do
       sensitive? true
     end
 
+    attribute :role, :atom do
+      constraints one_of: [:admin, :donor]
+      default :donor
+      public? true
+    end
+
     attribute :confirmed_at, :utc_datetime_usec
   end
 
   identities do
     identity :unique_email, [:email]
   end
+
+  relationships do
+    has_one :donor, CheerfulDonor.Giving.Donor do
+      allow_nil? true
+    end
+    has_one :church, CheerfulDonor.Accounts.Church do
+      allow_nil? true
+    end
+  end
+
 end

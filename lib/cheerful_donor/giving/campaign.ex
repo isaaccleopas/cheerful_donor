@@ -13,7 +13,7 @@ defmodule CheerfulDonor.Giving.Campaign do
     defaults [
       :read,
       :destroy,
-      create: [:title, :description, :goal_amount, :is_active],
+      create: [:title, :description, :goal_amount, :is_active, :church_id],
       update: [:title, :description, :goal_amount, :is_active]
     ]
   end
@@ -46,6 +46,7 @@ defmodule CheerfulDonor.Giving.Campaign do
     belongs_to :church, CheerfulDonor.Accounts.Church
 
     has_many :donations, CheerfulDonor.Giving.Donation
+    has_many :donation_intents, CheerfulDonor.Giving.DonationIntent
   end
-  
+
 end

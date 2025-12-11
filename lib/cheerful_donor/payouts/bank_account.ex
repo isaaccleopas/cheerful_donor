@@ -14,7 +14,8 @@ defmodule CheerfulDonor.Payouts.BankAccount do
     create: [
       :bank_name,
       :account_number,
-      :account_name
+      :account_name,
+      :church_id
     ],
     update: [
       :bank_name,

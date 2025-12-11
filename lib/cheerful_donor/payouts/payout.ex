@@ -14,14 +14,15 @@ defmodule CheerfulDonor.Payouts.Payout do
     create: [
       :amount,
       :status,
+      :currency,
       :paid_at,
-      :reference
+      :reference,
+      :church_id,
+      :bank_account_id
     ],
     update: [
-      :amount,
       :status,
       :paid_at,
-      :reference
     ]
   ]
   end
@@ -32,6 +33,12 @@ defmodule CheerfulDonor.Payouts.Payout do
     attribute :amount, :integer do
       allow_nil? false
       public? true
+    end
+
+    attribute :currency, :string do
+      allow_nil? false
+      public? true
+      default "NGN"
     end
 
     attribute :status, :atom do
