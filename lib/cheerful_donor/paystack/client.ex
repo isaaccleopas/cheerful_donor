@@ -4,7 +4,7 @@ defmodule CheerfulDonor.Paystack.Client do
   @paystack_url "https://api.paystack.co"
 
   # Load secret keys based on env
-  env = Application.get_env(:cheerful_donor, :env, :dev)
+  env = Application.compile_env(:cheerful_donor, :env, :dev)
 
   case env do
     :prod -> @secret_key System.get_env("PAYSTACK_SECRET_KEY")

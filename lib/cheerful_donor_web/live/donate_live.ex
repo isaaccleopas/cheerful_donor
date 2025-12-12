@@ -1,57 +1,42 @@
 defmodule CheerfulDonorWeb.DonateLive do
   use CheerfulDonorWeb, :live_view
-  import Ash.Query
-  alias CheerfulDonor.Giving
+  require Ash.Query
+
+  alias CheerfulDonor.Accounts
   alias CheerfulDonor.Giving.DonationIntent
   alias CheerfulDonor.Accounts.Donor
   alias CheerfulDonor.Paystack.Client
 
   @impl true
   def mount(_params, session, socket) do
-    user = session["user"]
-
-    user_id =
-      case user do
-        "user?id=" <> id -> id
-        _ -> nil
-      end
-
-    IO.puts("Mounted DonateLive with user_id: #{inspect(user_id)}")
+    user = socket.assigns.current_user
+    IO.inspect(user, label: "DonateLive mount user")
+    user_id = user.id
 
     donor =
       if user_id do
-        Donor
-        |> Ash.Query.new()
-        |> Ash.Query.filter(user_id: user_id)
-        |> CheerfulDonor.Accounts.read_one()
+        case Accounts.get_donor_by_user_id!(user_id, actor: %{id: user_id}) do
+          %Donor{} = donor -> donor
+          nil -> Accounts.create_donor_for_user!(user_id, actor: %{id: user_id})
+        end
       else
-        {:ok, nil}
+        nil
       end
 
-    donor =
-      case donor do
-        {:ok, %Donor{} = donor} ->
-          donor
+    socket =
+      socket
+      |> assign(:user_id, user_id)
+      |> assign(:donor, donor)
+      |> assign(:amount, nil)
+      |> assign(:paid, false)
+      |> assign(:loading, false)
 
-        {:ok, nil} ->
-          {:ok, new_donor} =
-            Donor
-            |> Ash.Changeset.for_create(:create, %{user_id: user_id})
-            |> CheerfulDonor.Accounts.create()
+    # Subscribe to donor events for real-time update
+    if connected?(socket) and donor do
+      Phoenix.PubSub.subscribe(CheerfulDonor.PubSub, "donor:#{donor.id}")
+    end
 
-          new_donor
-
-        {:error, err} ->
-          raise err
-      end
-
-    {:ok,
-     socket
-     |> assign(:user_id, user_id)
-     |> assign(:donor, donor)
-     |> assign(:amount, nil)
-     |> assign(:paid, false)
-     |> assign(:loading, false)}
+    {:ok, socket}
   end
 
   @impl true
@@ -69,9 +54,10 @@ defmodule CheerfulDonorWeb.DonateLive do
 
   def handle_event("start_payment", _params, %{assigns: %{amount: amount, donor: donor}} = socket) do
     with {int_amount, _} <- Integer.parse(amount || "") do
-      # 1. Create donation intent
+      # Generate donation reference
       reference = Ecto.UUID.generate()
 
+      # Create DonationIntent
       changeset =
         DonationIntent
         |> Ash.Changeset.for_create(:create, %{
@@ -82,35 +68,39 @@ defmodule CheerfulDonorWeb.DonateLive do
           donor_id: donor.id
         })
 
-      case Giving.create(changeset) do
+      case Ash.create(changeset) do
         {:ok, intent} ->
-          # 2. Initialize Paystack from backend
+          # Sign donor ID for callback
+          donor_token = Phoenix.Token.sign(CheerfulDonorWeb.Endpoint, "donor auth", donor.id)
+
+          callback_url =
+            CheerfulDonorWeb.Endpoint.url() <>
+              "/paystack/callback?donor_token=#{donor_token}"
+
           params = %{
             email: donor.user.email,
             amount: int_amount * 100,
             reference: intent.reference,
-            callback_url: "https://yourapp.com/paystack/verify"
+            callback_url: callback_url
           }
 
           case Client.initialize_transaction(params) do
             {:ok, %{"data" => %{"authorization_url" => url}}} ->
               {:noreply,
-               socket
-               |> assign(:loading, true)
-               |> push_navigate(to: url)}
+              socket
+              |> assign(:loading, true)
+              |> redirect(external: url)}
 
             {:error, reason} ->
               IO.inspect(reason, label: "Paystack init failed")
 
               {:noreply,
-               socket
-               |> put_flash(:error, "Payment initialization failed")}
+              socket |> put_flash(:error, "Payment initialization failed")}
           end
 
         {:error, errors} ->
           {:noreply,
-           socket
-           |> put_flash(:error, "Failed to create donation intent: #{inspect(errors)}")}
+          socket |> put_flash(:error, "Failed to create donation intent: #{inspect(errors)}")}
       end
     else
       :error ->
@@ -119,10 +109,11 @@ defmodule CheerfulDonorWeb.DonateLive do
   end
 
   @impl true
-  def handle_info(%{event: "donation_paid", payload: %{reference: _ref}}, socket) do
+  def handle_info({:donation_confirmed, _donation_id}, socket) do
     {:noreply,
-     socket
-     |> put_flash(:info, "Payment confirmed!")
-     |> assign(:paid, true)}
+    socket
+    |> put_flash(:info, "Donation successful! Thank you.")
+    |> assign(:paid, true)
+    |> assign(:loading, false)}
   end
 end

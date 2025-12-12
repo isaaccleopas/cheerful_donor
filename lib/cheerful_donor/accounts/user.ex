@@ -223,8 +223,22 @@ defmodule CheerfulDonor.Accounts.User do
   end
 
   policies do
+    # Allow AshAuthentication interaction flows
     bypass AshAuthentication.Checks.AshAuthenticationInteraction do
       authorize_if always()
+    end
+
+    # Registration, sign-in, etc.
+    policy action_type(:create) do
+      authorize_if always()
+    end
+
+    policy action_type(:read) do
+      authorize_if expr(id == ^actor(:id))
+    end
+
+    policy action_type(:update) do
+      authorize_if expr(id == ^actor(:id))
     end
   end
 
@@ -255,7 +269,7 @@ defmodule CheerfulDonor.Accounts.User do
   end
 
   relationships do
-    has_one :donor, CheerfulDonor.Giving.Donor do
+    has_one :donor, CheerfulDonor.Accounts.Donor do
       allow_nil? true
     end
     has_one :church, CheerfulDonor.Accounts.Church do

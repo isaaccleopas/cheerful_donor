@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Accounts.Donor do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Accounts,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "donors"
@@ -33,14 +34,32 @@ defmodule CheerfulDonor.Accounts.Donor do
   end
 
   relationships do
-    belongs_to :user, CheerfulDonor.Accounts.User,
-      allow_nil?: false,
-      public?: true
+    belongs_to :user, CheerfulDonor.Accounts.User do
+      public? true
+      allow_nil? false
+    end
 
     has_many :payment_methods, CheerfulDonor.Billing.PaymentMethod
     has_many :donations, CheerfulDonor.Giving.Donation
     has_many :subscriptions, CheerfulDonor.Billing.Subscription
     has_many :transactions, CheerfulDonor.Payments.Transaction
+  end
+
+  policies do
+    # allow create
+    policy action_type(:create) do
+      authorize_if always()
+    end
+
+    # user can read their own donor record
+    policy action_type(:read) do
+      authorize_if expr(user_id == ^actor(:id))
+    end
+
+    # user can update their own donor record
+    policy action_type(:update) do
+      authorize_if expr(user_id == ^actor(:id))
+    end
   end
 
   identities do
