@@ -62,7 +62,14 @@ config :spark,
 config :cheerful_donor,
   ecto_repos: [CheerfulDonor.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [CheerfulDonor.Accounts]
+  ash_domains: [
+    CheerfulDonor.Paystack,
+    CheerfulDonor.Billing,
+    CheerfulDonor.Payments,
+    CheerfulDonor.Payouts,
+    CheerfulDonor.Giving,
+    CheerfulDonor.Accounts
+  ]
 
 # Configure the endpoint
 config :cheerful_donor, CheerfulDonorWeb.Endpoint,

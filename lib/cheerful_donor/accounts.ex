@@ -8,5 +8,7 @@ defmodule CheerfulDonor.Accounts do
   resources do
     resource CheerfulDonor.Accounts.Token
     resource CheerfulDonor.Accounts.User
+    resource CheerfulDonor.Accounts.Church
+    resource CheerfulDonor.Accounts.Donor
   end
 end
