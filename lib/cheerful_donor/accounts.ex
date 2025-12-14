@@ -15,6 +15,13 @@ defmodule CheerfulDonor.Accounts do
 
   alias CheerfulDonor.Accounts.Donor
 
+  def get_donor_by_email(email) do
+    Donor
+    |> Ash.Query.for_read(:read, load: [:user])
+    |> Ash.Query.filter(Ash.Query.ref(:user, :email) == ^email)
+    |> Ash.read_one()
+  end
+
   def get_donor_by_id!(id, opts \\ []) do
     Donor
     |> Ash.Query.filter(id == ^id)

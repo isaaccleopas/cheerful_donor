@@ -8,9 +8,8 @@ defmodule CheerfulDonorWeb.DonateLive do
   alias CheerfulDonor.Paystack.Client
 
   @impl true
-  def mount(_params, session, socket) do
+  def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    IO.inspect(user, label: "DonateLive mount user")
     user_id = user.id
 
     donor =

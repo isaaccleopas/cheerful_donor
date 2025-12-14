@@ -19,39 +19,36 @@ defmodule CheerfulDonor.Enums do
   def payout_statuses,
     do: [:pending, :processing, :success, :failed]
 
-  # Paystack Events
-  def paystack_event_types do
-    [
-      # Charge events
-      :charge_dispute_create,
-      :charge_dispute_remind,
-      :charge_dispute_resolve,
-      :charge_success,
+  @event_map %{
+    "charge.success" => :charge_success,
+    "charge.dispute.create" => :charge_dispute_create,
+    "charge.dispute.remind" => :charge_dispute_remind,
+    "charge.dispute.resolve" => :charge_dispute_resolve,
 
-      # Customer identification
-      :customeridentification_failed,
-      :customeridentification_success,
+    "customeridentification.failed" => :customeridentification_failed,
+    "customeridentification.success" => :customeridentification_success,
 
-      # Payment Request
-      :paymentrequest_pending,
-      :paymentrequest_success,
+    "paymentrequest.pending" => :paymentrequest_pending,
+    "paymentrequest.success" => :paymentrequest_success,
 
-      # Refund events
-      :refund_failed,
-      :refund_pending,
-      :refund_processed,
-      :refund_processing,
+    "refund.failed" => :refund_failed,
+    "refund.pending" => :refund_pending,
+    "refund.processed" => :refund_processed,
+    "refund.processing" => :refund_processing,
 
-      # Subscription events
-      :subscription_create,
-      :subscription_disable,
-      :subscription_expiring_cards,
-      :subscription_not_renew,
+    "subscription.create" => :subscription_create,
+    "subscription.disable" => :subscription_disable,
+    "subscription.expiring_cards" => :subscription_expiring_cards,
+    "subscription.not_renew" => :subscription_not_renew,
 
-      # Transfer (Payout) events
-      :transfer_failed,
-      :transfer_success,
-      :transfer_reversed
-    ]
+    "transfer.failed" => :transfer_failed,
+    "transfer.success" => :transfer_success,
+    "transfer.reversed" => :transfer_reversed
+  }
+
+  def paystack_event_types, do: Map.values(@event_map)
+
+  def map_event_type(str) do
+    Map.get(@event_map, str, nil)
   end
 end

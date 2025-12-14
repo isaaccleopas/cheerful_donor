@@ -16,6 +16,10 @@ defmodule CheerfulDonorWeb.Router do
     plug :load_from_session
   end
 
+  pipeline :paystack_webhook do
+    plug :accepts, ["json"]
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :load_from_bearer
@@ -52,7 +56,7 @@ defmodule CheerfulDonorWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    post "/paystack/webhook", PaystackWebhookController, :handle
+    # post "/paystack/webhook", PaystackWebhookController, :handle
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
 
@@ -93,10 +97,10 @@ defmodule CheerfulDonorWeb.Router do
   # -----------------------------------------
   # 🔹 PAYSTACK WEBHOOK (PRODUCTION ENABLED!)
   # -----------------------------------------
-  scope "/api/paystack", CheerfulDonorWeb do
-    pipe_through :api
 
-    post "/webhook", PaystackWebhookController, :webhook
+  scope "/paystack", CheerfulDonorWeb do
+    pipe_through :paystack_webhook
+    post "/webhook", PaystackWebhookController, :handle
   end
 
   # ------------------------------

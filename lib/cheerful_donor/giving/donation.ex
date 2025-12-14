@@ -13,7 +13,7 @@ defmodule CheerfulDonor.Giving.Donation do
     defaults [
       :read,
       :destroy,
-      create: [:amount, :currency, :status, :reference, :message, :donor_id, :church_id, :campaign_id, :donation_intent_id],
+      create: [:amount, :currency, :status, :reference, :message, :type, :donor_id, :church_id, :campaign_id, :donation_intent_id],
       update: [:amount, :amount_paid, :status, :message, :paystack_id]
     ]
 
@@ -23,8 +23,8 @@ defmodule CheerfulDonor.Giving.Donation do
     end
 
     update :mark_as_paid do
-      accept [:status, :amount_paid, :paystack_id]
-      change set_attribute(:status, :success)
+      accept [:amount_paid, :paystack_id]
+      change set_attribute(:status, :successful)
     end
   end
 
@@ -47,6 +47,12 @@ defmodule CheerfulDonor.Giving.Donation do
       public? true
       default :pending
       constraints one_of: CheerfulDonor.Enums.donation_statuses()
+    end
+
+    attribute :type, :atom do
+      allow_nil? false
+      default :one_time
+      constraints one_of: [:one_time, :recurring]
     end
 
     attribute :reference, :string do

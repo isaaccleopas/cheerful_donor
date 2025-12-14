@@ -10,7 +10,18 @@ defmodule CheerfulDonor.Paystack.WebhookEvent do
   end
 
   actions do
-    defaults [:create, :read]
+    defaults [:read]
+
+    create :create do
+      accept [:event_type, :payload]
+    end
+
+    update :mark_processed do
+      primary? true
+      accept []
+      change set_attribute(:processed, true)
+      validate attribute_equals(:processed, false)
+    end
   end
 
   attributes do
