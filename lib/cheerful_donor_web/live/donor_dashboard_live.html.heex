@@ -56,15 +56,15 @@
           <tbody>
             <%= for d <- @donations || [] do %>
               <tr class="border-b">
-                <td class="py-2"><%= d.reference || "-" %></td>
-                <td class="py-2"><%= (d.campaign && d.campaign.title) || "General" %></td>
-                <td class="py-2">₦<%= d.amount_paid || d.amount %></td>
-                <td class="py-2">
+                <td class="text-gray-800 py-2"><%= d.reference || "-" %></td>
+                <td class="text-gray-800 py-2"><%= (d.campaign && d.campaign.title) || "General" %></td>
+                <td class="text-gray-800 py-2">₦<%= d.amount_paid || d.amount %></td>
+                <td class="text-gray-800 py-2">
                     <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
                         <%= d.status %>
                     </span>
                 </td>
-                <td class="py-2"><%= format_datetime(d.inserted_at) %></td>
+                <td class="text-gray-800 text-gray-800 py-2"><%= format_datetime(d.inserted_at) %></td>
               </tr>
             <% end %>
           </tbody>
@@ -89,11 +89,11 @@
           <tbody>
             <%= for s <- @subscriptions || [] do %>
               <tr class="border-b">
-                <td class="py-2"><%= s.subscription_code || "N/A" %></td>
-                <td class="py-2">₦<%= s.amount %></td>
-                <td class="py-2"><%= s.interval %></td>
-                <td class="py-2"><%= format_datetime(s.next_charge_at) %></td>
-                <td class="py-2">
+                <td class="text-gray-800 py-2"><%= s.subscription_code || "N/A" %></td>
+                <td class="text-gray-800 py-2">₦<%= s.amount %></td>
+                <td class="text-gray-800 py-2"><%= s.interval %></td>
+                <td class="text-gray-800 py-2"><%= format_datetime(s.next_charge_at) %></td>
+                <td class="text-gray-800 py-2">
                     <span class={"text-xs px-2 py-1 rounded #{status_label_class(s.status)}"}>
                         <%= s.status %>
                     </span>
@@ -121,21 +121,21 @@
           <tbody>
             <%= for t <- @transactions || [] do %>
               <tr class="border-b">
-                <td class="py-2"><%= t.reference || "-" %></td>
-                <td class="py-2">₦<%= t.amount %></td>
-                <td class="py-2">
+                <td class="text-gray-800 py-2"><%= t.reference || "-" %></td>
+                <td class="text-gray-800 py-2">₦<%= t.amount %></td>
+                <td class="text-gray-800 py-2">
                 <%= cond do %>
                     <% t.donation_id -> %> Donation
                     <% t.subscription_id -> %> Subscription
                     <% true -> %> Other
                 <% end %>
                 </td>
-                <td class="py-2">
+                <td class="text-gray-800 py-2">
                     <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
                         <%= t.status %>
                     </span>
                 </td>
-                <td class="py-2"><%= format_datetime(t.paid_at || t.inserted_at) %></td>
+                <td class="text-gray-800 py-2"><%= format_datetime(t.paid_at || t.inserted_at) %></td>
               </tr>
             <% end %>
           </tbody>
