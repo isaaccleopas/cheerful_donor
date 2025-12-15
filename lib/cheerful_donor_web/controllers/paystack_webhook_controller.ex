@@ -25,9 +25,7 @@ defmodule CheerfulDonorWeb.PaystackWebhookController do
           {:ok, webhook_event} ->
             result = CheerfulDonor.Payments.HandlePaystackEvent.process(payload)
 
-            IO.inspect(webhook_event, label: "Saved Webhook Event")
             if result != :ignored do
-              IO.inspect(result, label: "Processing Result")
               Ash.Changeset.for_update(webhook_event, :mark_processed, %{processed: true})
               |> Ash.update!()
             end

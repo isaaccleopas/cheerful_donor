@@ -10,7 +10,6 @@ defmodule CheerfulDonorWeb.DonorDashboardLive do
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    IO.inspect(user, label: "DonorDashboardLive mount user")
     user_id = user.id
 
     donor = Accounts.get_donor_by_user_id!(user_id, actor: %{id: user_id})

@@ -21,8 +21,6 @@ defmodule CheerfulDonor.Paystack.Client do
     recv_timeout: 10_000    # 10 seconds read timeout
   ]
 
-  IO.inspect(env, label: "Paystack Environment")
-
   # -------------------------
   # Unified Request Handler
   # -------------------------

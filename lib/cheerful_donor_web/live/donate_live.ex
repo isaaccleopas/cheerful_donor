@@ -91,7 +91,6 @@ defmodule CheerfulDonorWeb.DonateLive do
               |> redirect(external: url)}
 
             {:error, reason} ->
-              IO.inspect(reason, label: "Paystack init failed")
 
               {:noreply,
               socket |> put_flash(:error, "Payment initialization failed")}
