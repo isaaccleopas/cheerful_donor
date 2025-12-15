@@ -25,24 +25,33 @@ defmodule CheerfulDonorWeb.Router do
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
-    ash_authentication_live_session :authenticated_routes do
-      # in each liveview, add one of the following at the top of the module:
-      #
-      # If an authenticated user must be present:
-      # on_mount {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
-      #
-      # If an authenticated user *may* be present:
-      # on_mount {CheerfulDonorWeb.LiveUserAuth, :live_user_optional}
-      #
-      # If an authenticated user must *not* be present:
-      # on_mount {CheerfulDonorWeb.LiveUserAuth, :live_no_user}
+    live_session :donor_auth,
+      on_mount: [
+        {CheerfulDonorWeb.LiveUserAuth, :current_user},
+        {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
+      ] do
+
+      # Donor Dashboard & Donation Pages
+      live "/donor/dashboard", DonorDashboardLive
+      live "/donate", DonateLive
+
+      # Admin Dashboard
+      live "/admin", AdminDashboardLive
     end
+
   end
 
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live_session :public,
+      on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
+
+      live "/", HomeLive, :index
+    end
+    get "/paystack/callback", PaystackCallbackController, :handle
+    get "/paystack/verify", VerifyController, :handle
+
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
