@@ -16,12 +16,19 @@ defmodule CheerfulDonorWeb.Router do
     plug :load_from_session
   end
 
+  pipeline :paystack_webhook do
+    plug :accepts, ["json"]
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :load_from_bearer
     plug :set_actor, :user
   end
 
+  # ------------------------------
+  # 🔹 AUTHENTICATED LIVEVIEW AREA
+  # ------------------------------
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
@@ -38,24 +45,28 @@ defmodule CheerfulDonorWeb.Router do
       # Admin Dashboard
       live "/admin", AdminDashboardLive
     end
-
   end
 
+  # ------------------------------
+  # 🔹 MAIN SITE ROUTES
+  # ------------------------------
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
-
+    
     live_session :public,
       on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
 
       live "/", HomeLive, :index
     end
+    
+    get "/", PageController, :home
+    # post "/paystack/webhook", PaystackWebhookController, :handle
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
 
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
-    # Remove these if you'd like to use your own authentication views
     sign_in_route register_path: "/register",
                   reset_path: "/reset",
                   auth_routes_prefix: "/auth",
@@ -65,14 +76,12 @@ defmodule CheerfulDonorWeb.Router do
                     Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
                   ]
 
-    # Remove this if you do not want to use the reset password feature
     reset_route auth_routes_prefix: "/auth",
                 overrides: [
                   CheerfulDonorWeb.AuthOverrides,
                   Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
                 ]
 
-    # Remove this if you do not use the confirmation strategy
     confirm_route CheerfulDonor.Accounts.User, :confirm_new_user,
       auth_routes_prefix: "/auth",
       overrides: [
@@ -80,7 +89,6 @@ defmodule CheerfulDonorWeb.Router do
         Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
       ]
 
-    # Remove this if you do not use the magic link strategy.
     magic_sign_in_route(CheerfulDonor.Accounts.User, :magic_link,
       auth_routes_prefix: "/auth",
       overrides: [
@@ -90,18 +98,19 @@ defmodule CheerfulDonorWeb.Router do
     )
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", CheerfulDonorWeb do
-  #   pipe_through :api
-  # end
+  # -----------------------------------------
+  # 🔹 PAYSTACK WEBHOOK (PRODUCTION ENABLED!)
+  # -----------------------------------------
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
+  scope "/paystack", CheerfulDonorWeb do
+    pipe_through :paystack_webhook
+    post "/webhook", PaystackWebhookController, :handle
+  end
+
+  # ------------------------------
+  # 🔹 DEV-ONLY ROUTES
+  # ------------------------------
   if Application.compile_env(:cheerful_donor, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
@@ -118,6 +127,7 @@ defmodule CheerfulDonorWeb.Router do
     end
   end
 
+  # Admin (AshAdmin)
   if Application.compile_env(:cheerful_donor, :dev_routes) do
     import AshAdmin.Router
 
