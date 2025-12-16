@@ -38,8 +38,12 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
       ] do
 
+      # donor routes
       live "/donor/dashboard", DonorDashboardLive
       live "/donate", DonateLive
+
+      # admin routes
+      live "/admin/dashboard", AdminDashboardLive
     end
 
     # ash_authentication_live_session :authenticated_routes do
@@ -55,8 +59,12 @@ defmodule CheerfulDonorWeb.Router do
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    # post "/paystack/webhook", PaystackWebhookController, :handle
+    live_session :public,
+      on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
+
+      live "/", HomeLive, :index
+    end
+    
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
 
