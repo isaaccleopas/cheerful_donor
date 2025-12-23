@@ -56,6 +56,8 @@ defmodule CheerfulDonorWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/register", AuthLive.Index, :register
+    live "/sign-in", AuthLive.Index, :sign_in
     # post "/paystack/webhook", PaystackWebhookController, :handle
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
@@ -63,14 +65,14 @@ defmodule CheerfulDonorWeb.Router do
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
-    sign_in_route register_path: "/register",
-                  reset_path: "/reset",
-                  auth_routes_prefix: "/auth",
-                  on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
-                  overrides: [
-                    CheerfulDonorWeb.AuthOverrides,
-                    Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-                  ]
+    # sign_in_route register_path: "/register",
+    #               reset_path: "/reset",
+    #               auth_routes_prefix: "/auth",
+    #               on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
+    #               overrides: [
+    #                 CheerfulDonorWeb.AuthOverrides,
+    #                 Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
+    #               ]
 
     reset_route auth_routes_prefix: "/auth",
                 overrides: [
