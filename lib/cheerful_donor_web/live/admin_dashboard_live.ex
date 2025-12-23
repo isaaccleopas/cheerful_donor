@@ -8,6 +8,19 @@ defmodule CheerfulDonorWeb.AdminDashboardLive do
 
   @impl true
   def mount(_params, _session, socket) do
+    authorize_admin!(socket)
+    {:ok, socket}
+  end
+
+  defp authorize_admin!(socket) do
+    case socket.assigns.current_user do
+      %{role: :admin} -> :ok
+      _ -> raise Phoenix.Router.NoRouteError, message: "Not authorized"
+    end
+  end
+  
+  @impl true
+  def mount(_params, _session, socket) do
     # Assumes LiveUserAuth assigns :current_user
     current_user = socket.assigns.current_user
 

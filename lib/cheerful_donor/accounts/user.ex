@@ -14,7 +14,7 @@ defmodule CheerfulDonor.Accounts.User do
 
       confirmation :confirm_new_user do
         monitor_fields [:email]
-        confirm_on_create? true
+        confirm_on_create? false
         confirm_on_update? false
         require_interaction? true
         confirmed_at_field :confirmed_at
@@ -109,13 +109,6 @@ defmodule CheerfulDonor.Accounts.User do
     end
 
     read :sign_in_with_token do
-      # In the generated sign in components, we validate the
-      # email and password directly in the LiveView
-      # and generate a short-lived token that can be used to sign in over
-      # a standard controller action, exchanging it for a standard token.
-      # This action performs that exchange. If you do not use the generated
-      # liveviews, you may remove this action, and set
-      # `sign_in_tokens_enabled? false` in the password strategy.
 
       description "Attempt to sign in using a short-lived sign in token."
       get? true
@@ -155,8 +148,15 @@ defmodule CheerfulDonor.Accounts.User do
         sensitive? true
       end
 
+      argument :role, :atom do
+        constraints one_of: [:admin, :donor]
+        default :donor
+      end
+
       # Sets the email from the argument
       change set_attribute(:email, arg(:email))
+
+      change set_attribute(:role, arg(:role))
 
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange

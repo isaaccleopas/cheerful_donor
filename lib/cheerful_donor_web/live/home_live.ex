@@ -17,6 +17,12 @@ defmodule CheerfulDonorWeb.HomeLive do
         </a>
       <% end %>
     </nav>
+    <%= if @current_user && @current_user.role == :admin do %>
+      <.link navigate={~p"/admin"}
+        class="mt-4 inline-block bg-gray-900 text-white px-6 py-3 rounded-lg">
+        Admin Dashboard
+      </.link>
+    <% end %>
     <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <div class="bg-white shadow-lg rounded-xl p-8 max-w-xl w-full text-center">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">
