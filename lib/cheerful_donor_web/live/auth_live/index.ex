@@ -24,8 +24,8 @@ defmodule CheerfulDonorWeb.AuthLive.Index do
     |> assign(:action, ~p"/auth/user/password/register")
     |> assign(
       :form,
-      Form.for_create(User, :register_with_password, api: Accounts)
-      |> to_form(as: "user")
+      Form.for_create(User, :register_with_password, api: Accounts, as: "user")
+      |> to_form()
     )
   end
 
@@ -38,8 +38,8 @@ defmodule CheerfulDonorWeb.AuthLive.Index do
     |> assign(:action, ~p"/auth/user/password/sign_in")
     |> assign(
       :form,
-      Form.for_action(User, :sign_in_with_password, api: Accounts)
-      |> to_form(as: "user")
+      Form.for_action(User, :sign_in_with_password, api: Accounts, as: "user")
+      |> to_form()
     )
   end
 

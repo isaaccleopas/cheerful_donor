@@ -12,42 +12,24 @@ defmodule CheerfulDonorWeb.AuthLive.AuthForm do
   end
 
   @impl true
-  def handle_event("validate", %{"form" => params}, socket) do
-    IO.inspect(params, label: "Validating params")
+  def handle_event("validate", %{"user" => params}, socket) do
     form = socket.assigns.form |> Form.validate(params, errors: false)
-    IO.inspect(form, label: "Validating form")
-
     {:noreply, assign(socket, form: form)}
   end
 
   @impl true
-  def handle_event("submit", %{"form" => params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
-      {:ok, user} ->
-        IO.inspect(user, label: "Submitted user")
-        {:noreply, assign(socket, trigger_action: true)}
-
-      {:error, form} ->
-        {:noreply, assign(socket, form: form)}
-    end
+  def handle_event("submit", %{"user" => params}, socket) do
+    form = socket.assigns.form |> Form.validate(params)
+    {:noreply, assign(socket, form: form, trigger_action: true)}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <%= if match?(%Phoenix.HTML.Form{}, @form) and @form.errors != [] do %>
-        <ul class="error-messages">
-          <%= for {field, {msg, _}} <- @form.errors do %>
-            <li>
-              <%= Phoenix.Naming.humanize(to_string(field)) %>: <%= msg %>
-            </li>
-          <% end %>
-        </ul>
-      <% end %>
-
       <.form
         for={@form}
+        as="user"
         phx-change="validate"
         phx-submit="submit"
         phx-trigger-action={@trigger_action}
@@ -55,28 +37,45 @@ defmodule CheerfulDonorWeb.AuthLive.AuthForm do
         action={@action}
         method="POST"
       >
+        <.input field={@form[:email]} type="email" label="Email" />
+        <.input
+          field={@form[:password]}
+          type="password"
+          label="Password"
+          value={Phoenix.HTML.Form.input_value(@form, :password)}
+        />
         <%= if @is_register? do %>
+          <.input
+            field={@form[:password_confirmation]}
+            type="password"
+            label="Confirm Password"
+            value={Phoenix.HTML.Form.input_value(@form, :password_confirmation)}
+          />
           <fieldset class="mb-4">
-            <legend>Register as</legend>
-
-            <label>
-              <input type="radio" name={@form[:role].name} value="donor" />
-              Donor
-            </label>
-
-            <label>
-              <input type="radio" name={@form[:role].name} value="admin" />
-              Admin
-            </label>
+            <legend class="text-sm font-semibold text-zinc-800">Register as</legend>
+            <div class="flex gap-4 mt-2">
+              <label class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={@form[:role].name}
+                  value="donor"
+                  checked={Phoenix.HTML.Form.input_value(@form, :role) == :donor}
+                /> Donor
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={@form[:role].name}
+                  value="admin"
+                  checked={Phoenix.HTML.Form.input_value(@form, :role) == :admin}
+                /> Admin
+              </label>
+            </div>
           </fieldset>
 
-          <.input field={@form[:password_confirmation]} type="password" label="Confirm Password" />
         <% end %>
 
-        <.input field={@form[:email]} type="email" label="Email" name="form[email]" />
-        <.input field={@form[:password]} type="password" label="Password" name="form[password]" />
-
-        <.button class="mt-4 w-full"><%= @cta %></.button>
+        <.button class="mt-4 w-full" phx-disable-with="Signing in..."><%= @cta %></.button>
       </.form>
     </div>
     """
