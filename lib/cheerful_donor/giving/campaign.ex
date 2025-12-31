@@ -31,12 +31,20 @@ defmodule CheerfulDonor.Giving.Campaign do
     end
 
     attribute :goal_amount, :integer do
+      allow_nil? true
       public? true
     end
 
     attribute :is_active, :boolean do
       public? true
       default true
+    end
+
+    attribute :type, :atom do
+      allow_nil? false
+      default :campaign
+      constraints one_of: [:campaign, :offering, :tithe]
+      public? true
     end
 
     timestamps()

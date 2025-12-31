@@ -38,8 +38,31 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
       ] do
 
+      # donor routes
       live "/donor/dashboard", DonorDashboardLive
       live "/donate", DonateLive
+      live "/campaigns/:id/donate", CampaignDonateLive, :index
+
+      # # admin routes
+      # live "/admin/dashboard", AdminDashboardLive
+      # live "/admin/church/new", AdminChurchLive, :new
+      # live "/admin/campaign/new", AdminCampaignLive, :new
+      # live "/admin/churches", AdminChurchesLive, :index
+      # live "/admin/campaigns", AdminCampaignsLive, :index
+    end
+
+    live_session :admin,
+      on_mount: [
+        {CheerfulDonorWeb.LiveUserAuth, :current_user},
+        {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
+        {CheerfulDonorWeb.AdminLiveAuth, :default}
+      ] do
+
+      live "/admin", AdminDashboardLive, :index
+      live "/admin/churches", AdminChurchesLive, :index
+      live "/admin/churches/new", AdminChurchLive, :new
+      live "/admin/campaigns", AdminCampaignsLive, :index
+      live "/admin/campaigns/new", AdminCampaignLive, :new
     end
 
     # ash_authentication_live_session :authenticated_routes do
@@ -55,22 +78,28 @@ defmodule CheerfulDonorWeb.Router do
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    # post "/paystack/webhook", PaystackWebhookController, :handle
+    live_session :public,
+      on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
+
+      live "/", HomeLive, :index
+      live "/register", AuthLive.Index, :register
+      live "/sign-in", AuthLive.Index, :sign_in
+    end
+
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
 
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
 
-    sign_in_route register_path: "/register",
-                  reset_path: "/reset",
-                  auth_routes_prefix: "/auth",
-                  on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
-                  overrides: [
-                    CheerfulDonorWeb.AuthOverrides,
-                    Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-                  ]
+    # sign_in_route register_path: "/register",
+    #               reset_path: "/reset",
+    #               auth_routes_prefix: "/auth",
+    #               on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
+    #               overrides: [
+    #                 CheerfulDonorWeb.AuthOverrides,
+    #                 Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
+    #               ]
 
     reset_route auth_routes_prefix: "/auth",
                 overrides: [
@@ -127,10 +156,10 @@ defmodule CheerfulDonorWeb.Router do
   if Application.compile_env(:cheerful_donor, :dev_routes) do
     import AshAdmin.Router
 
-    scope "/admin" do
+    scope "/system" do
       pipe_through :browser
 
-      ash_admin "/"
+      ash_admin "/admin"
     end
   end
 end

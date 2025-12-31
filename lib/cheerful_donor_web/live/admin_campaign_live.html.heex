@@ -1,0 +1,24 @@
+<div class="max-w-xl mx-auto p-8">
+  <h1 class="text-xl font-bold mb-4">Create Campaign</h1>
+
+  <form phx-submit="save" class="space-y-4">
+    <input name="campaign[title]" placeholder="Title" class="input" />
+    <textarea name="campaign[description]" placeholder="Description" class="input"></textarea>
+
+    <select name="campaign[kind]" class="input">
+      <option value="offering">Offering</option>
+      <option value="tithe">Tithe</option>
+      <option value="fundraiser">Fundraiser</option>
+    </select>
+
+    <select name="campaign[church_id]" class="input">
+      <%= for c <- @churches do %>
+        <option value={c.id}><%= c.name %></option>
+      <% end %>
+    </select>
+
+    <input type="number" name="campaign[goal_amount]" placeholder="Goal (optional)" class="input" />
+
+    <button class="btn-primary w-full">Create Campaign</button>
+  </form>
+</div>
