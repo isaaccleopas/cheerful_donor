@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Accounts.Church do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Accounts,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "churches"
@@ -44,5 +45,19 @@ defmodule CheerfulDonor.Accounts.Church do
     has_many :donations, CheerfulDonor.Giving.Donation
     has_many :bank_accounts, CheerfulDonor.Payouts.BankAccount
     has_many :payouts, CheerfulDonor.Payouts.Payout
+  end
+
+  policies do
+    policy action_type(:create) do
+      authorize_if expr(actor(:role) == :admin)
+    end
+
+    policy action_type([:update, :destroy]) do
+      authorize_if expr(user_id == ^actor(:id))
+    end
+
+    policy action_type(:read) do
+      authorize_if always()
+    end
   end
 end

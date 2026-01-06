@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Giving.Donation do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "donations"
@@ -80,6 +81,12 @@ defmodule CheerfulDonor.Giving.Donation do
     end
 
     belongs_to :transaction, CheerfulDonor.Payments.Transaction, allow_nil?: true
+  end
+
+  policies do
+    policy action_type(:read) do
+      authorize_if expr(donor_id == ^actor(:donor_id))
+    end
   end
 
 end

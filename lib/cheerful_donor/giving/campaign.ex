@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Giving.Campaign do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "campaigns"
@@ -55,6 +56,20 @@ defmodule CheerfulDonor.Giving.Campaign do
 
     has_many :donations, CheerfulDonor.Giving.Donation
     has_many :donation_intents, CheerfulDonor.Giving.DonationIntent
+  end
+
+  policies do
+    policy action_type(:create) do
+      authorize_if expr(actor(:role) == :admin)
+    end
+
+    policy action_type([:update, :destroy]) do
+      authorize_if expr(church.user_id == ^actor(:id))
+    end
+
+    policy action_type(:read) do
+      authorize_if always()
+    end
   end
 
 end
