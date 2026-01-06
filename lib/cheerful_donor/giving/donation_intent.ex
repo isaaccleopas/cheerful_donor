@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "donation_intents"
@@ -62,6 +63,18 @@ defmodule CheerfulDonor.Giving.DonationIntent do
     has_one :donation, CheerfulDonor.Giving.Donation do
       source_attribute :id                 # primary key in DonationIntent
       destination_attribute :donation_intent_id  # foreign key in Donation
+    end
+  end
+
+  policies do
+    policy action(:create) do
+      authorize_if always()
+    end
+
+    policy action_type(:read) do
+      authorize_if expr(
+        donor_id == ^actor(:donor_id) or is_nil(donor_id)
+      )
     end
   end
 
