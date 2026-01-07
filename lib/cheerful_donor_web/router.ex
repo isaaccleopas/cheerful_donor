@@ -59,8 +59,8 @@ defmodule CheerfulDonorWeb.Router do
       ] do
 
       live "/admin", AdminDashboardLive, :index
-      live "/admin/churches", AdminChurchesLive, :index
-      live "/admin/churches/new", AdminChurchLive, :new
+      live "/admin/church", AdminChurchesLive, :index
+      live "/admin/church/new", AdminChurchLive, :new
       live "/admin/campaigns", AdminCampaignsLive, :index
       live "/admin/campaigns/new", AdminCampaignLive, :new
     end

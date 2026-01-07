@@ -1,0 +1,75 @@
+<%= if @needs_onboarding do %>
+  <div class="max-w-xl mx-auto mt-12 text-center space-y-6">
+    <h1 class="text-2xl font-bold">Welcome 👋</h1>
+
+    <p class="text-gray-600">
+      You haven’t created a church yet.  
+      Create one to start accepting donations.
+    </p>
+
+    <.link
+      navigate={~p"/admin/church/new"}
+      class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700"
+    >
+      Create Church
+    </.link>
+  </div>
+<% else %>
+
+<div class="space-y-8">
+  <h1 class="text-2xl font-bold">
+    <%= @church.name %> Dashboard
+  </h1>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <.stat label="Total Raised" value={"₦#{@stats.total_amount}"} />
+    <.stat label="Donations" value={@stats.donation_count} />
+    <.stat label="Active Campaigns" value={@stats.active_campaigns} />
+  </div>
+
+  <!-- Campaigns -->
+  <section>
+    <h2 class="text-xl font-semibold mb-2">Campaigns</h2>
+
+    <ul class="space-y-2">
+      <%= for campaign <- @campaigns do %>
+        <li class="p-4 border rounded">
+          <div class="flex justify-between">
+            <span class="font-medium"><%= campaign.title %></span>
+            <span class={campaign.is_active && "text-green-600"}>
+              <%= if campaign.is_active, do: "Active", else: "Inactive" %>
+            </span>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+
+  <!-- Recent Donations -->
+  <section>
+    <h2 class="text-xl font-semibold mb-2">Recent Donations</h2>
+
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left p-2">Amount</th>
+          <th class="text-left p-2">Campaign</th>
+          <th class="text-left p-2">Status</th>
+          <th class="text-left p-2">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for donation <- @recent_donations do %>
+          <tr class="border-b">
+            <td class="p-2">₦<%= donation.amount_paid || donation.amount %></td>
+            <td class="p-2"><%= donation.campaign && donation.campaign.title %></td>
+            <td class="p-2"><%= donation.status %></td>
+            <td class="p-2"><%= donation.inserted_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+</div>
+<% end %>

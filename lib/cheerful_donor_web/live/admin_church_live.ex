@@ -18,15 +18,22 @@ defmodule CheerfulDonorWeb.AdminChurchLive do
   def handle_event("save", %{"church" => params}, socket) do
     user = socket.assigns.current_user
 
-    case Accounts.create_church(Map.put(params, "user_id", user.id)) do
-      {:ok, _church} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Church created successfully")
-         |> push_navigate(to: "/admin")}
+    params =
+      params
+      |> Map.put("user_id", user.id)
 
-      {:error, err} ->
-        {:noreply, put_flash(socket, :error, "Failed: #{inspect(err)}")}
+    case CheerfulDonor.Accounts.Church
+        |> Ash.Changeset.for_create(:create, params, actor: user)
+        |> Ash.create() do
+      {:ok, church} ->
+        {:noreply,
+        socket
+        |> put_flash(:info, "Church created successfully")
+        |> push_navigate(to: ~p"/admin")}
+
+      {:error, error} ->
+        IO.inspect(error, label: "Church create error")
+        {:noreply, socket}
     end
   end
 

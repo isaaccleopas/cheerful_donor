@@ -1,79 +1,108 @@
 defmodule CheerfulDonorWeb.AdminDashboardLive do
   use CheerfulDonorWeb, :live_view
+  require Ash.Query
 
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Giving
-  alias CheerfulDonor.Billing
-  alias CheerfulDonor.Payments
 
-  @impl true
-  def mount(_params, _session, socket) do
-    authorize_admin!(socket)
-    {:ok, socket}
-  end
+  attr :label, :string, required: true
+  attr :value, :string, required: true
 
-  defp authorize_admin!(socket) do
-    case socket.assigns.current_user do
-      %{role: :admin} -> :ok
-      _ -> raise Phoenix.Router.NoRouteError, message: "Not authorized"
-    end
-  end
-  
-  @impl true
-  def mount(_params, _session, socket) do
-    # Assumes LiveUserAuth assigns :current_user
-    current_user = socket.assigns.current_user
-
-    if current_user.role != :admin do
-      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
-    else
-      stats = %{
-        donors: Accounts.count_donors!(),
-        donations: Giving.count_donations!(),
-        total_donated: Giving.total_donated_amount!(),
-        active_subscriptions: Billing.count_active_subscriptions!(),
-        transactions: Payments.count_transactions!()
-      }
-
-      {:ok,
-       socket
-       |> assign(:page_title, "Admin Dashboard")
-       |> assign(:stats, stats)}
-    end
-  end
-
-  @impl true
-  def render(assigns) do
+  def stat(assigns) do
     ~H"""
-    <div class="min-h-screen bg-gray-100 p-6">
-      <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6">Admin Dashboard</h1>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <.stat_card title="Total Donors" value={@stats.donors} />
-          <.stat_card title="Total Donations" value={@stats.donations} />
-          <.stat_card title="Total Donated" value={@stats.total_donated} />
-          <.stat_card title="Active Subscriptions" value={@stats.active_subscriptions} />
-          <.stat_card title="Transactions" value={@stats.transactions} />
-        </div>
-
-        <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <.link navigate={~p"/admin/donors"} class="admin-link">Manage Donors</.link>
-          <.link navigate={~p"/admin/donations"} class="admin-link">View Donations</.link>
-          <.link navigate={~p"/admin/subscriptions"} class="admin-link">Subscriptions</.link>
-          <.link navigate={~p"/admin/transactions"} class="admin-link">Transactions</.link>
-        </div>
+    <div class="rounded-lg border p-4 bg-white shadow-sm">
+      <div class="text-sm text-gray-500"><%= @label %></div>
+      <div class="mt-1 text-2xl font-semibold text-gray-900">
+        <%= @value %>
       </div>
     </div>
     """
   end
 
-  defp stat_card(assigns) do
-    ~H"""
-    <div class="bg-white rounded-xl shadow p-6">
-      <p class="text-gray-500 text-sm mb-1"><%= @title %></p>
-      <p class="text-2xl font-bold text-indigo-600"><%= @value %></p>
-    </div>
-    """
+  @impl true
+  def mount(_params, _session, socket) do
+    actor = socket.assigns.current_user
+
+    {:ok,
+     socket
+     |> assign(:page_title, "Admin Dashboard")
+     |> assign(:actor, actor)
+     |> load_dashboard_data()}
+  end
+
+  # --------------------
+  # Data Loading
+  # --------------------
+
+  defp load_dashboard_data(socket) do
+    actor = socket.assigns.actor
+
+    case get_church(actor) do
+      {:ok, nil} ->
+        socket
+        |> assign(:church, nil)
+        |> assign(:campaigns, [])
+        |> assign(:stats, empty_stats())
+        |> assign(:recent_donations, [])
+        |> assign(:needs_onboarding, true)
+
+      {:ok, church} ->
+        socket
+        |> assign(:church, church)
+        |> assign(:campaigns, get_campaigns(church, actor))
+        |> assign(:stats, get_stats(church, actor))
+        |> assign(:recent_donations, get_recent_donations(church, actor))
+        |> assign(:needs_onboarding, false)
+
+      {:error, _} ->
+        socket
+        |> put_flash(:error, "Unable to load dashboard")
+    end
+  end
+
+  defp empty_stats do
+    %{
+      total_amount: 0,
+      donation_count: 0,
+      active_campaigns: 0
+    }
+  end
+
+  defp get_church(actor) do
+    Accounts.Church
+    |> Ash.Query.filter(user_id == ^actor.id)
+    |> Ash.read_one(actor: actor)
+  end
+
+  defp get_campaigns(church, actor) do
+    Giving.Campaign
+    |> Ash.Query.filter(church_id == ^church.id)
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.read!(actor: actor)
+  end
+
+  defp get_recent_donations(church, actor) do
+    Giving.Donation
+    |> Ash.Query.filter(church_id == ^church.id)
+    |> Ash.Query.sort(inserted_at: :desc)
+    |> Ash.Query.limit(10)
+    |> Ash.read!(actor: actor)
+  end
+
+  defp get_stats(church, actor) do
+    donations =
+      Giving.Donation
+      |> Ash.Query.filter(church_id == ^church.id and status == :successful)
+      |> Ash.read!(actor: actor)
+
+    %{
+      total_amount: Enum.sum(Enum.map(donations, &(&1.amount_paid || 0))),
+      donation_count: length(donations),
+      active_campaigns:
+        Giving.Campaign
+        |> Ash.Query.filter(church_id == ^church.id and is_active == true)
+        |> Ash.read!(actor: actor)
+        |> length()
+    }
   end
 end
