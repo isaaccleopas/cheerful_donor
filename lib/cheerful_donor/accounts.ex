@@ -49,4 +49,12 @@ defmodule CheerfulDonor.Accounts do
     |> Ash.Query.load(:user)
     |> Ash.read_one!(opts)
   end
+
+  def get_church_by_user_id(user_id) do
+    CheerfulDonor.Accounts.Church
+    |> Ash.Query.for_read(:read)
+    |> Ash.Query.filter(user_id == ^user_id)
+    |> Ash.read_one()
+  end
+
 end

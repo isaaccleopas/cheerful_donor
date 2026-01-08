@@ -3,7 +3,16 @@ defmodule CheerfulDonorWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    case socket.assigns.current_user do
+      %{role: :admin} ->
+        {:ok, redirect(socket, to: "/admin")}
+
+      %{role: :donor} ->
+        {:ok, redirect(socket, to: "/donor/dashboard")}
+
+      _ ->
+        {:ok, socket}
+    end
   end
 
   @impl true
