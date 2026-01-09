@@ -89,4 +89,8 @@ defmodule CheerfulDonor.Giving.Donation do
     end
   end
 
+  identities do
+    identity :unique_intent, [:donation_intent_id]
+  end
+
 end

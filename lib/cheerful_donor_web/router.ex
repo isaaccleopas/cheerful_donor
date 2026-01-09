@@ -43,12 +43,6 @@ defmodule CheerfulDonorWeb.Router do
       live "/donate", DonateLive
       live "/campaigns/:id/donate", CampaignDonateLive, :index
 
-      # # admin routes
-      # live "/admin/dashboard", AdminDashboardLive
-      # live "/admin/church/new", AdminChurchLive, :new
-      # live "/admin/campaign/new", AdminCampaignLive, :new
-      # live "/admin/churches", AdminChurchesLive, :index
-      # live "/admin/campaigns", AdminCampaignsLive, :index
     end
 
     live_session :admin,
@@ -62,18 +56,10 @@ defmodule CheerfulDonorWeb.Router do
       live "/admin/church/new", AdminChurchLive, :new
       live "/admin/campaigns", AdminCampaignsLive, :index
       live "/admin/campaigns/new", AdminCampaignLive, :new
+      live "/admin/payout/setup", AdminPayoutSetupLive, :new
     end
-
-    # ash_authentication_live_session :authenticated_routes do
-    #   # Require logged-in user unless otherwise configured in LV
-    #   live "/donor/dashboard", DonorDashboardLive, :show
-    #   live "/donate", DonateLive, :index
-    # end
   end
 
-  # ------------------------------
-  # 🔹 MAIN SITE ROUTES
-  # ------------------------------
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
 
@@ -81,6 +67,7 @@ defmodule CheerfulDonorWeb.Router do
       on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
 
       live "/", HomeLive, :index
+      live "/campaigns/:id/donate", CampaignDonateLive, :index
       live "/register", AuthLive.Index, :register
       live "/sign-in", AuthLive.Index, :sign_in
     end
@@ -90,15 +77,6 @@ defmodule CheerfulDonorWeb.Router do
 
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
-
-    # sign_in_route register_path: "/register",
-    #               reset_path: "/reset",
-    #               auth_routes_prefix: "/auth",
-    #               on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
-    #               overrides: [
-    #                 CheerfulDonorWeb.AuthOverrides,
-    #                 Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-    #               ]
 
     reset_route auth_routes_prefix: "/auth",
                 overrides: [

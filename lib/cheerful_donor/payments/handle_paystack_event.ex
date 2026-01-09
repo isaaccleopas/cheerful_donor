@@ -63,6 +63,10 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
     end
   end
 
+  defp finalize_one_time_payment(%DonationIntent{status: :successful}, _amount, _channel) do
+    :already_processed
+  end
+
   defp finalize_one_time_payment(%DonationIntent{} = intent, amount, channel) do
     {:ok, _} =
       Giving.update_donation_intent(intent, %{
@@ -101,43 +105,6 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
 
     :ok
   end
-
-  # def handle(%{"event" => "charge.success", "data" => data}) do
-  #   finalize_one_time_payment(data)
-  # end
-
-  # def handle(_event), do: :ok
-
-  # defp finalize_one_time_payment(%{
-  #        "reference" => reference,
-  #        "amount" => amount,
-  #        "currency" => currency,
-  #        "id" => paystack_id,
-  #        "paid_at" => paid_at
-  #      }) do
-  #   with {:ok, intent} <- Giving.get_donation_intent_by_reference(reference),
-  #        :pending <- intent.status do
-
-  #     Giving.update_donation_intent(intent, %{
-  #       status: :successful
-  #     })
-
-  #     Payments.create_donation(%{
-  #       donation_intent_id: intent.id,
-  #       donor_id: intent.donor_id,
-  #       reference: reference,
-  #       amount: div(amount, 100),
-  #       amount_paid: div(amount, 100),
-  #       currency: currency,
-  #       paystack_id: paystack_id,
-  #       status: :successful,
-  #       paid_at: paid_at
-  #     })
-  #   else
-  #     {:error, _} -> :ignored
-  #     _ -> :already_processed
-  #   end
-  # end
 
   # ------------------------------------------------------------
   # SUBSCRIPTION CREATED (subscription.create)

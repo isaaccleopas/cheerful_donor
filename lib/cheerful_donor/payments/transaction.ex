@@ -16,6 +16,7 @@ defmodule CheerfulDonor.Payments.Transaction do
       :currency,
       :status,
       :reference,
+      :payment_provider,
       :channel,
       :fees,
       :paid_at,
@@ -57,6 +58,12 @@ defmodule CheerfulDonor.Payments.Transaction do
     attribute :reference, :string do
       allow_nil? false
       public? true
+    end
+
+    attribute :payment_provider, :atom do
+      allow_nil? false
+      default :paystack
+      constraints one_of: [:paystack]
     end
 
     attribute :channel, :string, public?: true

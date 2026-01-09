@@ -47,15 +47,21 @@ defmodule CheerfulDonor.Accounts.Church do
     has_many :payouts, CheerfulDonor.Payouts.Payout
   end
 
+  identities do
+    identity :unique_user_church, [:user_id]
+  end
+
   policies do
     # Must be logged in
     policy always() do
       authorize_if actor_present()
     end
 
-    # Only admins can create churches
-    policy action(:create) do
-      authorize_if expr(^actor(:role) == :admin)
+    policies do
+      policy action(:create) do
+        authorize_if expr(^actor(:role) == :admin)
+        authorize_if CheerfulDonor.Accounts.Checks.AdminHasNoChurch
+      end
     end
 
     # Only the owning admin can read/update/delete
