@@ -5,7 +5,7 @@ defmodule CheerfulDonorWeb.HomeLive do
   def mount(_params, _session, socket) do
     case socket.assigns.current_user do
       %{role: :admin} ->
-        {:ok, redirect(socket, to: "/admin")}
+        {:ok, redirect(socket, to: "/admin/dashbord")}
 
       %{role: :donor} ->
         {:ok, redirect(socket, to: "/donor/dashboard")}
@@ -27,7 +27,7 @@ defmodule CheerfulDonorWeb.HomeLive do
       <% end %>
     </nav>
     <%= if @current_user && @current_user.role == :admin do %>
-      <.link navigate={~p"/admin"}
+      <.link navigate={~p"/admin/dashbord"}
         class="mt-4 inline-block bg-gray-900 text-white px-6 py-3 rounded-lg">
         Admin Dashboard
       </.link>

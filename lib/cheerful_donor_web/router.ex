@@ -58,8 +58,7 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.AdminLiveAuth, :default}
       ] do
 
-      live "/admin", AdminDashboardLive, :index
-      live "/admin/church", AdminChurchesLive, :index
+      live "/admin/dashbord", AdminDashboardLive, :index
       live "/admin/church/new", AdminChurchLive, :new
       live "/admin/campaigns", AdminCampaignsLive, :index
       live "/admin/campaigns/new", AdminCampaignLive, :new

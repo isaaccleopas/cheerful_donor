@@ -29,7 +29,7 @@ defmodule CheerfulDonorWeb.AdminChurchLive do
         {:noreply,
         socket
         |> put_flash(:info, "Church created successfully")
-        |> push_navigate(to: ~p"/admin")}
+        |> push_navigate(to: ~p"/admin/dashbord")}
 
       {:error, error} ->
         IO.inspect(error, label: "Church create error")

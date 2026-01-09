@@ -24,7 +24,7 @@ defmodule CheerfulDonorWeb.AdminCampaignLive do
         {:noreply,
          socket
          |> put_flash(:info, "Campaign created")
-         |> push_navigate(to: "/admin")}
+         |> push_navigate(to: "/admin/dashbord")}
 
       {:error, err} ->
         {:noreply, put_flash(socket, :error, inspect(err))}

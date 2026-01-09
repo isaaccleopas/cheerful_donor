@@ -10,7 +10,7 @@ defmodule CheerfulDonorWeb.AuthLiveRedirect do
         redirect(conn, to: "/admin/church/new")
 
       user.role == :admin ->
-        redirect(conn, to: "/admin")
+        redirect(conn, to: "/admin/dashbord")
 
       user.role == :donor ->
         redirect(conn, to: "/donor/dashboard")
