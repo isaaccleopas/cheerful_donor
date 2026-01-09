@@ -72,10 +72,7 @@ defmodule CheerfulDonor.Giving.DonationIntent do
     end
 
     policy action_type(:read) do
-      authorize_if expr(
-        donor_id == ^actor(:donor_id)
-      )
+      authorize_if expr(user_id == ^actor(:id))
     end
   end
-
 end

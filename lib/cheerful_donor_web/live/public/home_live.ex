@@ -8,7 +8,7 @@ defmodule CheerfulDonorWeb.HomeLive do
         {:ok, redirect(socket, to: "/admin/dashbord")}
 
       %{role: :donor} ->
-        {:ok, redirect(socket, to: "/donor/dashboard")}
+        {:ok, redirect(socket, to: "/donate")}
 
       _ ->
         {:ok, socket}
