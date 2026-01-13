@@ -51,6 +51,10 @@ defmodule CheerfulDonorWeb.DonateLive do
      |> push_navigate(to: "/sign-in")}
   end
 
+  def handle_event("start_payment", _params, %{assigns: %{amount: nil}} = socket) do
+    {:noreply, put_flash(socket, :error, "Please enter an amount")}
+  end
+
   def handle_event("start_payment", _params, %{assigns: %{amount: amount, donor: donor}} = socket) do
     with {int_amount, _} <- Integer.parse(amount || "") do
       # Generate donation reference
@@ -77,7 +81,7 @@ defmodule CheerfulDonorWeb.DonateLive do
               "/paystack/callback?donor_token=#{donor_token}"
 
           params = %{
-            email: donor.user.email,
+            email: socket.assigns.current_user.email,
             amount: int_amount * 100,
             reference: intent.reference,
             callback_url: callback_url

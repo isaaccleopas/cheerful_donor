@@ -76,32 +76,47 @@
     <%= if @tab == "subscriptions" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Subscriptions</h2>
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs text-gray-500 border-b">
-              <th class="py-2">Plan</th>
-              <th class="py-2">Amount</th>
-              <th class="py-2">Interval</th>
-              <th class="py-2">Next Charge</th>
-              <th class="py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for s <- @subscriptions || [] do %>
-              <tr class="border-b">
-                <td class="text-gray-800 py-2"><%= s.subscription_code || "N/A" %></td>
-                <td class="text-gray-800 py-2">₦<%= s.amount %></td>
-                <td class="text-gray-800 py-2"><%= s.interval %></td>
-                <td class="text-gray-800 py-2"><%= format_datetime(s.next_charge_at) %></td>
-                <td class="text-gray-800 py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(s.status)}"}>
-                        <%= s.status %>
-                    </span>
-                </td>
+
+        <%= if Enum.empty?(@subscriptions || []) do %>
+          <div class="text-sm text-gray-500 py-6 text-center">
+            You don’t have any active subscriptions yet.
+          </div>
+        <% else %>
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-gray-500 border-b">
+                <th class="py-2">Plan</th>
+                <th class="py-2">Amount</th>
+                <th class="py-2">Interval</th>
+                <th class="py-2">Next Charge</th>
+                <th class="py-2">Status</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <%= for s <- @subscriptions do %>
+                <tr class="border-b">
+                  <td class="text-gray-800 py-2">
+                    <%= s.subscription_code || "N/A" %>
+                  </td>
+                  <td class="text-gray-800 py-2">
+                    ₦<%= s.amount %>
+                  </td>
+                  <td class="text-gray-800 py-2">
+                    <%= s.interval %>
+                  </td>
+                  <td class="text-gray-800 py-2">
+                    <%= if s.next_charge_at, do: format_datetime(s.next_charge_at), else: "-" %>
+                  </td>
+                  <td class="text-gray-800 py-2">
+                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(s.status)}"}>
+                      <%= s.status %>
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
       </div>
     <% end %>
 

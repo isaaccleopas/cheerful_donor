@@ -34,15 +34,15 @@ defmodule CheerfulDonor.Giving do
   """
   def get_donation_intent(reference) do
     DonationIntent
-    |> Ash.Query.filter(reference: reference)
+    |> Ash.Query.for_read(:read_by_reference, %{reference: reference})
     |> Ash.read_one()
   end
 
   def get_donations_for_donor(donor_id) do
     Donation
     |> Ash.Query.filter(donor_id == ^donor_id)
-    |> Ash.Query.load(:campaign)
-    |> read!()
+    |> Ash.Query.load([:campaign, :church])
+    |> Ash.read!(actor: %{donor_id: donor_id})
   end
 
   def update_donation(%Donation{} = donation, attrs) do
@@ -54,12 +54,23 @@ defmodule CheerfulDonor.Giving do
   @doc """
   Update a donation intent
   """
-  def update_donation_intent(intent, attrs),
-    do: Ash.update(intent, attrs)
+  def update_donation_intent(%DonationIntent{} = intent, attrs, opts \\ []) do
+    action = Keyword.get(opts, :action, :update)
+    context = Keyword.get(opts, :context, %{})
+
+    intent
+    |> Ash.Changeset.for_update(action, attrs, context: context)
+    |> Ash.update()
+  end
 
   @doc """
   Create a donation record
   """
-  def create_donation(attrs),
-    do: Ash.create(Donation, attrs)
+  def create_donation(attrs, opts \\ []) do
+    context = Keyword.get(opts, :context, %{})
+
+    Donation
+    |> Ash.Changeset.for_create(:create, attrs, context: context)
+    |> Ash.create()
+  end
 end

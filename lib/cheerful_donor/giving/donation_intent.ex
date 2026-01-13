@@ -12,10 +12,20 @@ defmodule CheerfulDonor.Giving.DonationIntent do
 
   actions do
     defaults [:read, :destroy,
-    update: [:status, :meta]
   ]
     create :create do
       accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :meta, :donor_id, :campaign_id, :church_id]
+    end
+
+    update :mark_successful do
+      accept []
+
+      change set_attribute(:status, :successful)
+    end
+
+    read :read_by_reference do
+      argument :reference, :string, allow_nil?: false
+      filter expr(reference == ^arg(:reference))
     end
   end
 
@@ -71,8 +81,12 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       authorize_if always()
     end
 
-    policy action_type(:read) do
-      authorize_if expr(user_id == ^actor(:id))
+    policy action(:read_by_reference) do
+      authorize_if always()
+    end
+
+    policy action_type(:update) do
+      authorize_if context_equals(:system, true)
     end
   end
 end

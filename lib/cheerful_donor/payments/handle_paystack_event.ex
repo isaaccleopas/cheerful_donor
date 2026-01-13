@@ -33,11 +33,14 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
           :ignored
       end
 
-    if webhook_event && result == :ok do
-      Ash.update!(webhook_event, %{processed: true})
+    if webhook_event do
+      case result do
+        :ok -> Ash.update!(webhook_event, %{processed: true})
+        :already_processed -> Ash.update!(webhook_event, %{processed: true})
+        _ -> :noop
+      end
     end
 
-    result
   end
 
   # ------------------------------------------------------------
@@ -64,46 +67,59 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   end
 
   defp finalize_one_time_payment(%DonationIntent{status: :successful}, _amount, _channel) do
-    :already_processed
+    :ok
   end
 
   defp finalize_one_time_payment(%DonationIntent{} = intent, amount, channel) do
-    {:ok, _} =
-      Giving.update_donation_intent(intent, %{
-        status: :successful
-      })
+    with {:ok, _intent} <-
+          Giving.update_donation_intent(
+            intent,
+            %{},
+            action: :mark_successful,
+            context: %{system: true}
+          ),
+        {:ok, donation} <-
+          Giving.create_donation(
+            %{
+              donor_id: intent.donor_id,
+              campaign_id: intent.campaign_id,
+              amount: amount,
+              currency: intent.currency,
+              reference: intent.reference,
+              donation_intent_id: intent.id,
+              type: :one_time,
+              status: :successful
+            },
+            context: %{system: true}
+          ),
+        {:ok, _txn} <-
+          Payments.create_transaction(
+            %{
+              donation_id: donation.id,
+              donor_id: intent.donor_id,
+              amount: amount,
+              currency: intent.currency,
+              status: :success,
+              payment_provider: :paystack,
+              reference: intent.reference,
+              channel: channel,
+              paid_at: DateTime.utc_now()
+            },
+            context: %{system: true}
+          ) do
 
-    {:ok, donation} =
-      Giving.create_donation(%{
-        donor_id: intent.donor_id,
-        campaign_id: intent.campaign_id,
-        amount: amount,
-        currency: intent.currency,
-        reference: intent.reference,
-        donation_intent_id: intent.id,
-        type: :one_time,
-        status: :successful     # ✅ FIX 1
-      })
+      Phoenix.PubSub.broadcast(
+        CheerfulDonor.PubSub,
+        "donor:#{intent.donor_id}",
+        {:donation_confirmed, donation.id}
+      )
 
-    {:ok, _txn} =
-      Payments.create_transaction(%{
-        donation_id: donation.id,
-        donor_id: intent.donor_id,
-        amount: amount,
-        currency: intent.currency,
-        status: :success,
-        reference: intent.reference,
-        channel: channel,       # ✅ FIX 2
-        paid_at: DateTime.utc_now()
-      })
-
-    Phoenix.PubSub.broadcast(
-      CheerfulDonor.PubSub,
-      "donor:#{intent.donor_id}",
-      {:donation_confirmed, donation.id}
-    )
-
-    :ok
+      :ok
+    else
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.InvalidAttribute{field: :donation_intent_id}]}} ->
+        Logger.info("Donation already exists for intent #{intent.id}")
+        :ok
+    end
   end
 
   # ------------------------------------------------------------
@@ -141,40 +157,48 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   # RECURRING PAYMENT SUCCESS (invoice.payment_succeeded)
   # ------------------------------------------------------------
   defp handle_subscription_payment(%{
-         "data" => %{
-           "subscription" => subscription_code,
-           "amount" => amount_kobo,
-           "status" => "success"
-         }
-       }) do
+        "data" => %{
+          "subscription" => subscription_code,
+          "amount" => amount_kobo,
+          "status" => "success"
+        }
+      }) do
 
-    amount = amount_kobo / 100
+    amount = div(amount_kobo, 100)
 
     with {:ok, %Subscription{} = sub} <- Billing.get_subscription_by_code(subscription_code),
-         {:ok, donor} <- Billing.get_donor_by_subscription(subscription_code) do
-
-      Billing.update_subscription(sub, %{
-        last_paid_at: DateTime.utc_now(),
-        status: :active
-      })
-
-      {:ok, donation} =
-        Giving.create_donation(%{
-          donor_id: donor.id,
-          type: :recurring,
-          amount: amount,
-          currency: "NGN"
-        })
-
-      {:ok, _txn} =
-        Payments.create_transaction(%{
-          donation_id: donation.id,
-          intent_id: nil,
-          amount: amount,
-          status: :success,
-          payment_provider: :paystack,
-          reference: "sub-" <> subscription_code
-        })
+        {:ok, donor} <- Billing.get_donor_by_subscription(subscription_code),
+        {:ok, _sub} <-
+          Billing.update_subscription(
+            sub,
+            %{last_paid_at: DateTime.utc_now(), status: :active},
+            context: %{system: true}
+          ),
+        {:ok, donation} <-
+          Giving.create_donation(
+            %{
+              donor_id: donor.id,
+              type: :recurring,
+              amount: amount,
+              currency: "NGN",
+              status: :successful,
+              reference: "sub-" <> subscription_code
+            },
+            context: %{system: true}
+          ),
+        {:ok, _txn} <-
+          Payments.create_transaction(
+            %{
+              donation_id: donation.id,
+              donor_id: donor.id,
+              amount: amount,
+              currency: "NGN",
+              status: :success,
+              payment_provider: :paystack,
+              reference: "sub-" <> subscription_code
+            },
+            context: %{system: true}
+          ) do
 
       Phoenix.PubSub.broadcast(
         CheerfulDonor.PubSub,
@@ -182,8 +206,8 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
         {:recurring_payment, donation.id}
       )
     else
-      _ ->
-        Logger.warning("Failed subscription payment for code=#{subscription_code}")
+      {:error, error} ->
+        Logger.error("Recurring payment failed: #{inspect(error)}")
     end
 
     :ok

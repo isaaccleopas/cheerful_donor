@@ -87,6 +87,14 @@ defmodule CheerfulDonor.Giving.Donation do
     policy action_type(:read) do
       authorize_if expr(donor_id == ^actor(:donor_id))
     end
+
+    policy action(:create) do
+      authorize_if context_equals(:system, true)
+    end
+
+    policy action(:update) do
+      authorize_if context_equals(:system, true)
+    end
   end
 
   identities do
