@@ -32,6 +32,12 @@ defmodule CheerfulDonor.Payments.Transaction do
       :paid_at
     ]
   ]
+    read :for_donor do
+      argument :donor_id, :uuid, allow_nil?: false
+      filter expr(donor_id == ^arg(:donor_id))
+
+      prepare build(load: [:donation, :subscription])
+    end
   end
 
   attributes do

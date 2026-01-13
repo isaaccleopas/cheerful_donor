@@ -25,6 +25,13 @@ defmodule CheerfulDonor.Billing.Subscription do
       :next_charge_at
     ]
   ]
+
+    read :for_donor do
+      argument :donor_id, :uuid, allow_nil?: false
+      filter expr(donor_id == ^arg(:donor_id))
+
+      prepare build(load: [:transactions])
+    end
   end
 
   attributes do

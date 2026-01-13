@@ -53,7 +53,7 @@ defmodule CheerfulDonor.Billing do
 
   def get_subscriptions_for_donor(donor_id) do
     Subscription
-    |> Ash.Query.filter(donor_id == ^donor_id)
-    |> read!()
+    |> Ash.Query.for_read(:for_donor, %{donor_id: donor_id})
+    |> Ash.read!()
   end
 end

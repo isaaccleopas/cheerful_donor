@@ -40,8 +40,7 @@ defmodule CheerfulDonor.Giving do
 
   def get_donations_for_donor(donor_id) do
     Donation
-    |> Ash.Query.filter(donor_id == ^donor_id)
-    |> Ash.Query.load([:campaign, :church])
+    |> Ash.Query.for_read(:for_donor, %{donor_id: donor_id})
     |> Ash.read!(actor: %{donor_id: donor_id})
   end
 

@@ -27,6 +27,13 @@ defmodule CheerfulDonor.Giving.Donation do
       accept [:amount_paid, :paystack_id]
       change set_attribute(:status, :successful)
     end
+
+    read :for_donor do
+      argument :donor_id, :uuid, allow_nil?: false
+      filter expr(donor_id == ^arg(:donor_id))
+
+      prepare build(load: [:campaign])
+    end
   end
 
   attributes do
