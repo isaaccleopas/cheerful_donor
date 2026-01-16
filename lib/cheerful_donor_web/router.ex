@@ -26,24 +26,44 @@ defmodule CheerfulDonorWeb.Router do
     plug :set_actor, :user
   end
 
-  # ------------------------------
-  # 🔹 AUTHENTICATED LIVEVIEW AREA
-  # ------------------------------
-  scope "/", CheerfulDonorWeb do
+  scope "/", CheerfulDonorWeb.Public do
     pipe_through :browser
 
-    live_session :donor_auth,
+    live_session :public,
       on_mount: [
-        {CheerfulDonorWeb.LiveUserAuth, :current_user},
-        {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
+        {CheerfulDonorWeb.LiveUserAuth, :current_user}
       ] do
 
-      # donor routes
-      live "/donor/dashboard", DonorDashboardLive
-      live "/donate", DonateLive
-      live "/campaigns/:id/donate", CampaignDonateLive, :index
-
+      live "/", HomeLive, :index
+      live "/donate/:slug", DonateLive.Show
+      live "/donate/:slug/checkout", DonateLive.Checkout
+      live "/donate/success/:reference", DonateLive.Success
+      live "/register", AuthLive.Index, :register
+      live "/sign-in", AuthLive.Index, :sign_in
     end
+  end
+
+  scope "/donor", CheerfulDonorWeb.Donor do
+    pipe_through :browser
+
+    live_session :donor,
+      on_mount: [
+        {CheerfulDonorWeb.LiveUserAuth, :current_user},
+        {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
+        {CheerfulDonorWeb.DonorLiveAuth, :default}
+      ] do
+
+      live "/dashboard", DashboardLive, :index
+      live "/donations", DonationsLive, :index
+      live "/subscriptions", SubscriptionsLive, :index
+      live "/transactions", TransactionsLive, :index
+      live "/payment-methods", PaymentMethodsLive, :index
+      # live "/donate", DonateLive
+    end
+  end
+
+  scope "/admin", CheerfulDonorWeb.Admin do
+    pipe_through :browser
 
     live_session :admin,
       on_mount: [
@@ -52,25 +72,30 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.AdminLiveAuth, :default}
       ] do
 
-      live "/admin/dashbord", AdminDashboardLive, :index
-      live "/admin/church/new", AdminChurchLive, :new
-      live "/admin/campaigns", AdminCampaignsLive, :index
-      live "/admin/campaigns/new", AdminCampaignLive, :new
-      live "/admin/payout/setup", AdminPayoutSetupLive, :new
+      live "/dashboard", DashboardLive, :index
+
+      live "/church/new", ChurchLive.New
+      live "/church/edit", ChurchLive.Edit
+
+      live "/bank-accounts", BankAccountLive.Index
+
+      live "/campaigns", CampaignLive.Index
+      live "/campaigns/new", CampaignLive.New
+      live "/campaigns/:id/edit", CampaignLive.Edit
+
+      live "/donations", DonationsLive.Index
+      live "/payouts", PayoutsLive.Index
+      
+      # live "/admin/dashbord", AdminDashboardLive, :index
+      # live "/admin/church/new", AdminChurchLive, :new
+      # live "/admin/campaigns", AdminCampaignsLive, :index
+      # live "/admin/campaigns/new", AdminCampaignLive, :new
+      # live "/admin/payout/setup", AdminPayoutSetupLive, :new
     end
   end
 
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
-
-    live_session :public,
-      on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
-
-      live "/", HomeLive, :index
-      live "/campaigns/:id/donate", CampaignDonateLive, :index
-      live "/register", AuthLive.Index, :register
-      live "/sign-in", AuthLive.Index, :sign_in
-    end
 
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle

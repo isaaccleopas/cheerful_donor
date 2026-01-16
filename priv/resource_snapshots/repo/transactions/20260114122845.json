@@ -50,18 +50,6 @@
     },
     {
       "allow_nil?": false,
-      "default": "\"one_time\"",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "type",
-      "type": "text"
-    },
-    {
-      "allow_nil?": false,
       "default": "nil",
       "generated?": false,
       "precision": null,
@@ -73,15 +61,15 @@
       "type": "text"
     },
     {
-      "allow_nil?": true,
-      "default": "nil",
+      "allow_nil?": false,
+      "default": "\"paystack\"",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "message",
+      "source": "payment_provider",
       "type": "text"
     },
     {
@@ -93,7 +81,19 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "amount_paid",
+      "source": "channel",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "fees",
       "type": "bigint"
     },
     {
@@ -105,8 +105,8 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "paystack_id",
-      "type": "text"
+      "source": "paid_at",
+      "type": "utc_datetime"
     },
     {
       "allow_nil?": false,
@@ -151,7 +151,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "donations_donor_id_fkey",
+        "name": "transactions_donor_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
@@ -182,7 +182,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "donations_church_id_fkey",
+        "name": "transactions_church_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
@@ -213,47 +213,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "donations_campaign_id_fkey",
+        "name": "transactions_subscription_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "campaigns"
+        "table": "subscriptions"
       },
       "scale": null,
       "size": null,
-      "source": "campaign_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "donations_donation_intent_id_fkey",
-        "on_delete": null,
-        "on_update": null,
-        "primary_key?": true,
-        "schema": "public",
-        "table": "donation_intents"
-      },
-      "scale": null,
-      "size": null,
-      "source": "donation_intent_id",
+      "source": "subscription_id",
       "type": "uuid"
     },
     {
@@ -275,16 +244,47 @@
           "global": null,
           "strategy": null
         },
-        "name": "donations_transaction_id_fkey",
+        "name": "transactions_donation_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "transactions"
+        "table": "donations"
       },
       "scale": null,
       "size": null,
-      "source": "transaction_id",
+      "source": "donation_id",
+      "type": "uuid"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": {
+        "deferrable": false,
+        "destination_attribute": "id",
+        "destination_attribute_default": null,
+        "destination_attribute_generated": null,
+        "index?": false,
+        "match_type": null,
+        "match_with": null,
+        "multitenancy": {
+          "attribute": null,
+          "global": null,
+          "strategy": null
+        },
+        "name": "transactions_payment_method_id_fkey",
+        "on_delete": null,
+        "on_update": null,
+        "primary_key?": true,
+        "schema": "public",
+        "table": "payment_methods"
+      },
+      "scale": null,
+      "size": null,
+      "source": "payment_method_id",
       "type": "uuid"
     }
   ],
@@ -293,23 +293,8 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "FC48EFB3A110703B88E62970DFFF7F240737F3DA33782002E3D6057F20FBC0C4",
-  "identities": [
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "donations_unique_intent_index",
-      "keys": [
-        {
-          "type": "atom",
-          "value": "donation_intent_id"
-        }
-      ],
-      "name": "unique_intent",
-      "nils_distinct?": true,
-      "where": null
-    }
-  ],
+  "hash": "67F5E6A6780F5648D98F12EC67300057FA3A6FC7FC38B173369E95281AE7198C",
+  "identities": [],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -317,5 +302,5 @@
   },
   "repo": "Elixir.CheerfulDonor.Repo",
   "schema": null,
-  "table": "donations"
+  "table": "transactions"
 }

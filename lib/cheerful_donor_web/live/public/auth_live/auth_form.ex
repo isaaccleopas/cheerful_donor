@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.AuthLive.AuthForm do
+defmodule CheerfulDonorWeb.Public.AuthLive.AuthForm do
   use CheerfulDonorWeb, :live_component
   import CheerfulDonorWeb.CoreComponents
   alias AshPhoenix.Form

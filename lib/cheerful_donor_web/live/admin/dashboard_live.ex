@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.AdminDashboardLive do
+defmodule CheerfulDonorWeb.Admin.DashboardLive do
   use CheerfulDonorWeb, :live_view
   require Ash.Query
 

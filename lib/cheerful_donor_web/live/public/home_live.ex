@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.HomeLive do
+defmodule CheerfulDonorWeb.Public.HomeLive do
   use CheerfulDonorWeb, :live_view
 
   @impl true

@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.DonateLive do
+defmodule CheerfulDonorWeb.Public.DonateLive do
   use CheerfulDonorWeb, :live_view
   require Ash.Query
 

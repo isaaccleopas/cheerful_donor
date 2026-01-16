@@ -1,4 +1,4 @@
-defmodule CheerfulDonor.Repo.Migrations.MigrateResources3 do
+defmodule CheerfulDonor.Repo.Migrations.AddSlugInCampaigns do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -13,9 +13,25 @@ defmodule CheerfulDonor.Repo.Migrations.MigrateResources3 do
     end
 
     create unique_index(:donations, [:donation_intent_id], name: "donations_unique_intent_index")
+
+    create unique_index(:churches, [:user_id], name: "churches_unique_user_church_index")
+
+    alter table(:campaigns) do
+      add :slug, :text, null: false
+    end
+
+    create unique_index(:campaigns, [:slug], name: "campaigns_unique_slug_index")
   end
 
   def down do
+    drop_if_exists unique_index(:campaigns, [:slug], name: "campaigns_unique_slug_index")
+
+    alter table(:campaigns) do
+      remove :slug
+    end
+
+    drop_if_exists unique_index(:churches, [:user_id], name: "churches_unique_user_church_index")
+
     drop_if_exists unique_index(:donations, [:donation_intent_id],
                      name: "donations_unique_intent_index"
                    )

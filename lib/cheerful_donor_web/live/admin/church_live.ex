@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.AdminChurchLive do
+defmodule CheerfulDonorWeb.Admin.ChurchLive do
   use CheerfulDonorWeb, :live_view
 
   alias CheerfulDonor.Accounts

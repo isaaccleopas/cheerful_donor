@@ -21,7 +21,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "name",
+      "source": "title",
       "type": "text"
     },
     {
@@ -33,7 +33,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "email",
+      "source": "slug",
       "type": "text"
     },
     {
@@ -45,7 +45,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "phone",
+      "source": "description",
       "type": "text"
     },
     {
@@ -57,7 +57,31 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "address",
+      "source": "goal_amount",
+      "type": "bigint"
+    },
+    {
+      "allow_nil?": true,
+      "default": "true",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "is_active",
+      "type": "boolean"
+    },
+    {
+      "allow_nil?": false,
+      "default": "\"campaign\"",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "type",
       "type": "text"
     },
     {
@@ -103,16 +127,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "churches_user_id_fkey",
+        "name": "campaigns_church_id_fkey",
         "on_delete": null,
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "users"
+        "table": "churches"
       },
       "scale": null,
       "size": null,
-      "source": "user_id",
+      "source": "church_id",
       "type": "uuid"
     }
   ],
@@ -121,19 +145,19 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "A9D9DE85C3B4EC95A7A69E81F58AA7FE336EFB7938772FB1CF980C5F97F446ED",
+  "hash": "685F0198819EEB07160468EF429C7B1FF9BFA374A86CC5D7E93159DF98D78A2B",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "churches_unique_user_church_index",
+      "index_name": "campaigns_unique_slug_index",
       "keys": [
         {
           "type": "atom",
-          "value": "user_id"
+          "value": "slug"
         }
       ],
-      "name": "unique_user_church",
+      "name": "unique_slug",
       "nils_distinct?": true,
       "where": null
     }
@@ -145,5 +169,5 @@
   },
   "repo": "Elixir.CheerfulDonor.Repo",
   "schema": null,
-  "table": "churches"
+  "table": "campaigns"
 }

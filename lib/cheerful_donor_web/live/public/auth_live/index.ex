@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.AuthLive.Index do
+defmodule CheerfulDonorWeb.Public.AuthLive.Index do
   use CheerfulDonorWeb, :live_view
 
   alias CheerfulDonor.Accounts
@@ -56,7 +56,7 @@ defmodule CheerfulDonorWeb.AuthLive.Index do
             </p>
 
             <.live_component
-              module={CheerfulDonorWeb.AuthLive.AuthForm}
+              module={CheerfulDonorWeb.Public.AuthLive.AuthForm}
               id={@form_id}
               form={@form}
               is_register?={@live_action == :register}

@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.DonorDashboardLive do
+defmodule CheerfulDonorWeb.Donor.DashboardLive do
   use CheerfulDonorWeb, :live_view
   import CheerfulDonorWeb.DonorDashboardView
 

@@ -27,6 +27,11 @@ defmodule CheerfulDonor.Giving.Campaign do
       public? true
     end
 
+    attribute :slug, :string do
+      allow_nil? false
+      public? true
+    end
+
     attribute :description, :string do
       public? true
     end
@@ -49,6 +54,10 @@ defmodule CheerfulDonor.Giving.Campaign do
     end
 
     timestamps()
+  end
+
+  identities do
+    identity :unique_slug, [:slug]
   end
 
   relationships do
