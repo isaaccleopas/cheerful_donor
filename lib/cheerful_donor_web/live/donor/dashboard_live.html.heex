@@ -1,8 +1,9 @@
 <div class="p-6">
   <header class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-semibold">Welcome back, <%= @donor.user && @donor.user.email || "Donor" %></h1>
-      <p class="text-sm text-gray-500">Here’s a summary of your giving activity.</p>
+      <h1 class="text-2xl font-semibold">
+        Welcome back, <%= @donor && get_in(@donor, [:user, :email]) || @user_email || "Donor" %>
+      </h1>
     </div>
 
     <div class="flex items-center space-x-3">
@@ -43,32 +44,39 @@
     <%= if @tab == "donations" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Donations</h2>
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs text-gray-500 border-b">
-              <th class="py-2">Reference</th>
-              <th class="py-2">Campaign</th>
-              <th class="py-2">Amount</th>
-              <th class="py-2">Status</th>
-              <th class="py-2">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for d <- @donations || [] do %>
-              <tr class="border-b">
-                <td class="text-gray-800 py-2"><%= d.reference || "-" %></td>
-                <td class="text-gray-800 py-2"><%= (d.campaign && d.campaign.title) || "General" %></td>
-                <td class="text-gray-800 py-2">₦<%= d.amount_paid || d.amount %></td>
-                <td class="text-gray-800 py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
-                        <%= d.status %>
-                    </span>
-                </td>
-                <td class="text-gray-800 text-gray-800 py-2"><%= format_datetime(d.inserted_at) %></td>
+
+        <%= if Enum.empty?(@donations || []) do %>
+          <div class="text-sm text-gray-500 py-6 text-center">
+            You haven’t made any donations yet.
+          </div>
+        <% else %>
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-gray-500 border-b">
+                <th class="py-2">Reference</th>
+                <th class="py-2">Campaign</th>
+                <th class="py-2">Amount</th>
+                <th class="py-2">Status</th>
+                <th class="py-2">Date</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <%= for d <- @donations || [] do %>
+                <tr class="border-b">
+                  <td class="text-gray-800 py-2"><%= d.reference || "-" %></td>
+                  <td class="text-gray-800 py-2"><%= (d.campaign && d.campaign.title) || "General" %></td>
+                  <td class="text-gray-800 py-2">₦<%= d.amount_paid || d.amount %></td>
+                  <td class="text-gray-800 py-2">
+                      <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
+                          <%= d.status %>
+                      </span>
+                  </td>
+                  <td class="text-gray-800 text-gray-800 py-2"><%= format_datetime(d.inserted_at) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
       </div>
 
     <% end %>
@@ -123,38 +131,45 @@
     <%= if @tab == "transactions" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Transactions</h2>
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs text-gray-500 border-b">
-              <th class="py-2">Reference</th>
-              <th class="py-2">Amount</th>
-              <th class="py-2">Type</th>
-              <th class="py-2">Status</th>
-              <th class="py-2">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for t <- @transactions || [] do %>
-              <tr class="border-b">
-                <td class="text-gray-800 py-2"><%= t.reference || "-" %></td>
-                <td class="text-gray-800 py-2">₦<%= t.amount %></td>
-                <td class="text-gray-800 py-2">
-                <%= cond do %>
-                    <% t.donation_id -> %> Donation
-                    <% t.subscription_id -> %> Subscription
-                    <% true -> %> Other
-                <% end %>
-                </td>
-                <td class="text-gray-800 py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
-                        <%= t.status %>
-                    </span>
-                </td>
-                <td class="text-gray-800 py-2"><%= format_datetime(t.paid_at || t.inserted_at) %></td>
+
+        <%= if Enum.empty?(@transactions || []) do %>
+          <div class="text-sm text-gray-500 py-6 text-center">
+            No transactions yet.
+          </div>
+        <% else %>
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-gray-500 border-b">
+                <th class="py-2">Reference</th>
+                <th class="py-2">Amount</th>
+                <th class="py-2">Type</th>
+                <th class="py-2">Status</th>
+                <th class="py-2">Date</th>
               </tr>
-            <% end %>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <%= for t <- @transactions || [] do %>
+                <tr class="border-b">
+                  <td class="text-gray-800 py-2"><%= t.reference || "-" %></td>
+                  <td class="text-gray-800 py-2">₦<%= t.amount %></td>
+                  <td class="text-gray-800 py-2">
+                  <%= cond do %>
+                      <% t.donation_id -> %> Donation
+                      <% t.subscription_id -> %> Subscription
+                      <% true -> %> Other
+                  <% end %>
+                  </td>
+                  <td class="text-gray-800 py-2">
+                      <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
+                          <%= t.status %>
+                      </span>
+                  </td>
+                  <td class="text-gray-800 py-2"><%= format_datetime(t.paid_at || t.inserted_at) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
       </div>
     <% end %>
   </section>

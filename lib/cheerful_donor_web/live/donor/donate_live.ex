@@ -1,4 +1,4 @@
-defmodule CheerfulDonorWeb.Public.DonateLive do
+defmodule CheerfulDonorWeb.Donor.DonateLive do
   use CheerfulDonorWeb, :live_view
   require Ash.Query
 
@@ -14,7 +14,7 @@ defmodule CheerfulDonorWeb.Public.DonateLive do
 
     donor =
       if user_id do
-        case Accounts.get_donor_by_user_id!(user_id, actor: %{id: user_id}) do
+        case Accounts.get_donor_by_user_id(user_id, actor: %{id: user_id}) do
           %Donor{} = donor -> donor
           nil -> Accounts.create_donor_for_user!(user_id, actor: %{id: user_id})
         end
@@ -94,7 +94,7 @@ defmodule CheerfulDonorWeb.Public.DonateLive do
               |> assign(:loading, true)
               |> redirect(external: url)}
 
-            {:error, reason} ->
+            {:error, _reason} ->
 
               {:noreply,
               socket |> put_flash(:error, "Payment initialization failed")}

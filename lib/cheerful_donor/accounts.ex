@@ -29,7 +29,7 @@ defmodule CheerfulDonor.Accounts do
     |> Ash.read_one!(opts)
   end
 
-  def get_donor_by_user_id!(user_id, opts \\ []) do
+  def get_donor_by_user_id(user_id, opts \\ []) do
     Donor
     |> Ash.Query.filter(user_id == ^user_id)
     |> Ash.Query.load(:user)
