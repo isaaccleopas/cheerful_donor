@@ -11,7 +11,7 @@ defmodule CheerfulDonorWeb.DonorLiveAuth do
         {:cont, socket}
 
       %{role: _other} ->
-        {:halt, redirect(socket, to: "/admin/dashbord")}
+        {:halt, redirect(socket, to: "/admin/dashboard")}
 
       nil ->
         {:halt, redirect(socket, to: "/sign-in")}
