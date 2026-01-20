@@ -4,6 +4,7 @@ defmodule CheerfulDonorWeb.Admin.DashboardLive do
 
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Giving
+  alias CheerfulDonor.Payouts
 
   attr :label, :string, required: true
   attr :value, :string, required: true
@@ -23,55 +24,57 @@ defmodule CheerfulDonorWeb.Admin.DashboardLive do
   def mount(_params, _session, socket) do
     actor = socket.assigns.current_user
 
-    {:ok,
-     socket
-     |> assign(:page_title, "Admin Dashboard")
-     |> assign(:actor, actor)
-     |> load_dashboard_data()}
-  end
+    with {:ok, church} <- get_church(actor),
+        {:ok, bank_accounts} <- get_bank_accounts(church, actor) do
 
-  # --------------------
-  # Data Loading
-  # --------------------
+      cond do
+        church == nil ->
+          {:ok,
+          socket
+          |> assign(:needs_onboarding, true)
+          |> push_navigate(to: ~p"/admin/church/new")}
 
-  defp load_dashboard_data(socket) do
-    actor = socket.assigns.actor
+        bank_accounts == [] ->
+          {:ok,
+          socket
+          |> assign(:needs_onboarding, true)
+          |> push_navigate(to: ~p"/admin/payouts/bank-accounts/new")}
 
-    case get_church(actor) do
-      {:ok, nil} ->
+        true ->
+          {:ok,
+          socket
+          |> assign(:needs_onboarding, false)
+          |> assign(:page_title, "Admin Dashboard")
+          |> assign(:actor, actor)
+          |> assign(:church, church)
+          |> assign(:campaigns, get_campaigns(church, actor))
+          |> assign(:stats, get_stats(church, actor))
+          |> assign(:recent_donations, get_recent_donations(church, actor))}
+      end
+    else
+      _ ->
+        {:ok,
         socket
-        |> assign(:church, nil)
-        |> assign(:campaigns, [])
-        |> assign(:stats, empty_stats())
-        |> assign(:recent_donations, [])
-        |> assign(:needs_onboarding, true)
-
-      {:ok, church} ->
-        socket
-        |> assign(:church, church)
-        |> assign(:campaigns, get_campaigns(church, actor))
-        |> assign(:stats, get_stats(church, actor))
-        |> assign(:recent_donations, get_recent_donations(church, actor))
         |> assign(:needs_onboarding, false)
-
-      {:error, _} ->
-        socket
-        |> put_flash(:error, "Unable to load dashboard")
+        |> put_flash(:error, "Unable to load admin dashboard")}
     end
-  end
-
-  defp empty_stats do
-    %{
-      total_amount: 0,
-      donation_count: 0,
-      active_campaigns: 0
-    }
   end
 
   defp get_church(actor) do
     Accounts.Church
     |> Ash.Query.filter(user_id == ^actor.id)
     |> Ash.read_one(actor: actor)
+  end
+
+  defp get_bank_accounts(nil, _actor), do: {:ok, []}
+
+  defp get_bank_accounts(church, actor) do
+    accounts =
+      Payouts.BankAccount
+      |> Ash.Query.filter(church_id == ^church.id)
+      |> Ash.read!(actor: actor)
+
+    {:ok, accounts}
   end
 
   defp get_campaigns(church, actor) do

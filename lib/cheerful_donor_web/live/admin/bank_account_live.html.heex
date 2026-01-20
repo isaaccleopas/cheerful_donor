@@ -1,0 +1,11 @@
+<.form for={@form} phx-submit="save" class="space-y-4">
+  <.input field={@form[:bank_name]} label="Bank Name" />
+  <.input field={@form[:account_name]} label="Account Name" />
+  <.input field={@form[:account_number]} label="Account Number" />
+
+  <div class="flex justify-end">
+    <.button class="bg-indigo-600 text-white">
+      Save Bank Account
+    </.button>
+  </div>
+</.form>
