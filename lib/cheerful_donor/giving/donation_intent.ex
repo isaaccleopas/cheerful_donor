@@ -85,6 +85,15 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       authorize_if always()
     end
 
+    policy action_type(:read) do
+      # For now, allow all reads
+      authorize_if always()
+    end
+
+    policy action_type([:create, :update, :destroy]) do
+      authorize_if always()
+    end
+
     policy action_type(:update) do
       authorize_if context_equals(:system, true)
     end

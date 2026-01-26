@@ -79,7 +79,7 @@ defmodule CheerfulDonorWeb.Admin.DashboardLive do
 
   defp get_campaigns(church, actor) do
     Giving.Campaign
-    |> Ash.Query.filter(church_id == ^church.id)
+    |> Ash.Query.for_read(:list_for_church, %{church_id: church.id})
     |> Ash.Query.sort(inserted_at: :desc)
     |> Ash.read!(actor: actor)
   end
@@ -98,14 +98,17 @@ defmodule CheerfulDonorWeb.Admin.DashboardLive do
       |> Ash.Query.filter(church_id == ^church.id and status == :successful)
       |> Ash.read!(actor: actor)
 
+    active_campaigns =
+      Giving.Campaign
+      |> Ash.Query.for_read(:list_for_church, %{church_id: church.id})
+      |> Ash.Query.filter(is_active == true)
+      |> Ash.read!(actor: actor)
+      |> length()
+
     %{
       total_amount: Enum.sum(Enum.map(donations, &(&1.amount_paid || 0))),
       donation_count: length(donations),
-      active_campaigns:
-        Giving.Campaign
-        |> Ash.Query.filter(church_id == ^church.id and is_active == true)
-        |> Ash.read!(actor: actor)
-        |> length()
+      active_campaigns: active_campaigns
     }
   end
 end

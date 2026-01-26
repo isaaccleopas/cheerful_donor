@@ -1,0 +1,27 @@
+<div class="space-y-4">
+  <%= for campaign <- @campaigns do %>
+    <div class="card p-4 border rounded">
+      <h3 class="font-semibold text-lg">
+        <%= campaign.title %>
+      </h3>
+
+      <span class="text-xs px-2 py-1 rounded bg-gray-600">
+        <%= String.capitalize(to_string(campaign.type)) %>
+      </span>
+
+      <p class="mt-2 text-sm text-gray-600">
+        <%= campaign.description %>
+      </p>
+
+      <%= if campaign.type == :tithe do %>
+      
+      <% end %>
+
+      <div class="mt-3">
+        <.link navigate={~p"/admin/campaigns/#{campaign.id}/edit"}>
+          Edit
+        </.link>
+      </div>
+    </div>
+  <% end %>
+</div>

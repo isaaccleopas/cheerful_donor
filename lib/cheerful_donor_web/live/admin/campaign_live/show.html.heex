@@ -1,0 +1,31 @@
+<h1><%= @campaign.title %></h1>
+
+<p><%= @campaign.description %></p>
+
+<p>
+  <strong>Type:</strong>
+  <%= String.capitalize(to_string(@campaign.type)) %>
+</p>
+
+<p>
+  <strong>Status:</strong>
+  <%= if @campaign.is_active, do: "Active", else: "Inactive" %>
+</p>
+
+<hr />
+
+<h3>Share this link</h3>
+
+<input
+  id="share-link"
+  type="text"
+  readonly
+  value={@share_url}
+  class="w-full"
+/>
+
+<div class="mt-4">
+  <.link navigate={~p"/admin/campaigns/#{@campaign.id}/edit"}>
+    Edit Campaign
+  </.link>
+</div>
