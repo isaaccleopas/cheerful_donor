@@ -2,12 +2,11 @@ defmodule CheerfulDonor.Giving do
   use Ash.Domain, otp_app: :cheerful_donor
 
   require Ash.Query
+  alias CheerfulDonor.Giving.{Campaign, DonationIntent, Donation}
   alias CheerfulDonor.Accounts.Donor
-  alias CheerfulDonor.Giving.DonationIntent
-  alias CheerfulDonor.Giving.Donation
 
   resources do
-    resource CheerfulDonor.Giving.Campaign
+    resource Campaign
     resource DonationIntent
     resource Donation
   end
@@ -60,6 +59,27 @@ defmodule CheerfulDonor.Giving do
     intent
     |> Ash.Changeset.for_update(action, attrs, context: context)
     |> Ash.update()
+  end
+
+  @doc """
+  Fetch a single campaign by id, ensuring the current user has access.
+  Raises if not found.
+  """
+  def get_campaign!(id, actor) do
+    Campaign
+    |> Ash.Query.for_read(:read)
+    |> Ash.Query.filter(id == ^id)
+    |> Ash.read_one!(actor: actor)
+  end
+
+  @doc """
+  Fetch a single campaign by id, returns {:ok, campaign} or {:error, reason}.
+  """
+  def get_campaign(id, actor) do
+    Campaign
+    |> Ash.Query.for_read(:read)
+    |> Ash.Query.filter(id == ^id)
+    |> Ash.read_one(actor: actor)
   end
 
   @doc """

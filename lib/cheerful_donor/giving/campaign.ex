@@ -1,4 +1,7 @@
 defmodule CheerfulDonor.Giving.Campaign do
+  require Ash.Expr
+  import Ash.Expr
+
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
@@ -14,9 +17,14 @@ defmodule CheerfulDonor.Giving.Campaign do
     defaults [
       :read,
       :destroy,
-      create: [:title, :description, :goal_amount, :is_active, :church_id],
+      create: [:title, :description, :goal_amount, :is_active, :church_id, :slug],
       update: [:title, :description, :goal_amount, :is_active]
     ]
+    read :list_for_church do
+      argument :church_id, :uuid
+
+      filter expr(church_id == ^arg(:church_id))
+    end
   end
 
   attributes do
@@ -69,11 +77,11 @@ defmodule CheerfulDonor.Giving.Campaign do
 
   policies do
     policy action_type(:create) do
-      authorize_if expr(actor(:role) == :admin)
+      authorize_if expr(^actor(:role) == :admin)
     end
 
     policy action_type([:update, :destroy]) do
-      authorize_if expr(church.user_id == ^actor(:id))
+      authorize_if expr(^actor(:role) == :admin)
     end
 
     policy action_type(:read) do

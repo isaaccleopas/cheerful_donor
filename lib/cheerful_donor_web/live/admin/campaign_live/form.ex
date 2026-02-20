@@ -28,7 +28,7 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
 
           form =
             campaign
-            |> AshPhoenix.Form.for_update(:update, domain: Giving, actor: socket.assigns.current_user)
+            |> AshPhoenix.Form.for_update(:update, actor: socket.assigns.current_user)
             |> to_form()
 
           {:noreply,
@@ -44,7 +44,7 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
       :new ->
         form =
           Campaign
-          |> AshPhoenix.Form.for_create(:create, domain: Giving, actor: socket.assigns.current_user)
+          |> AshPhoenix.Form.for_create(:create, actor: socket.assigns.current_user)
           |> to_form()
 
         {:noreply, assign(socket, page_title: "New Campaign", form: form)}
@@ -62,8 +62,8 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
 
   @impl true
   def handle_event("save", %{"form" => params}, socket) do
-    # Now safe: current_user.church is preloaded
-    church_id = socket.assigns.current_user.church.id
+    current_user = socket.assigns.current_user
+    church_id = current_user.church.id
 
     params =
       params
@@ -73,8 +73,18 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
         val -> String.to_integer(val)
       end)
       |> Map.put("church_id", church_id)
+      |> Map.put(
+        "slug",
+        params["title"]
+        |> String.downcase()
+        |> String.replace(~r/[^a-z0-9]+/, "-")
+        |> String.trim("-")
+      )
+    IO.inspect(params, label: "Campaign form params")
 
-    case Form.submit(socket.assigns.form, actor: socket.assigns.current_user, params: params) do
+    form = socket.assigns.form
+
+    case Form.submit(form, params: params, actor: current_user) do
       {:ok, campaign} ->
         {:noreply,
         socket
