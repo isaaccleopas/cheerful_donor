@@ -9,11 +9,13 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    # Fetch user with church preloaded
     user = Accounts.get_user_with_church!(socket.assigns.current_user.id, socket.assigns.current_user)
 
-    # Fetch campaigns for this user's church
-    campaigns = Giving.list_campaigns_for_church(user.church.id)
+    campaigns =
+      Giving.list_campaigns_for_church(
+        user.church.id,
+        user
+      )
 
     {:ok,
      socket

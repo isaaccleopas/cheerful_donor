@@ -62,6 +62,15 @@ defmodule CheerfulDonor.Giving do
   end
 
   @doc """
+  List campaigns for a specific church.
+  """
+  def list_campaigns_for_church(church_id, actor \\ nil) do
+    Campaign
+    |> Ash.Query.for_read(:list_for_church, %{church_id: church_id})
+    |> Ash.read!(actor: actor)
+  end
+
+  @doc """
   Fetch a single campaign by id, ensuring the current user has access.
   Raises if not found.
   """

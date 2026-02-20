@@ -11,7 +11,6 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
 
   @impl true
   def mount(_params, _session, socket) do
-    # Preload the church for the current user
     user = Accounts.get_user_with_church!(socket.assigns.current_user.id, socket.assigns.current_user)
 
     {:ok, assign(socket, current_user: user)}
@@ -80,7 +79,6 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
         |> String.replace(~r/[^a-z0-9]+/, "-")
         |> String.trim("-")
       )
-    IO.inspect(params, label: "Campaign form params")
 
     form = socket.assigns.form
 
