@@ -53,7 +53,8 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.DonorLiveAuth, :default}
       ] do
 
-      live "/donate", DonateLive
+      live "/campaigns", CampaignLive.Index, :index
+      live "/donate/:slug", DonateLive.Show
 
       live "/dashboard", DashboardLive, :index
       live "/donations", DonationsLive, :index

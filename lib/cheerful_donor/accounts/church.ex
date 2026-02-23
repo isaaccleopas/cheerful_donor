@@ -52,20 +52,19 @@ defmodule CheerfulDonor.Accounts.Church do
   end
 
   policies do
-    # Must be logged in
-    policy always() do
-      authorize_if actor_present()
+    # PUBLIC READ ACCESS
+    policy action(:read) do
+      authorize_if always()
     end
 
-    policies do
-      policy action(:create) do
-        authorize_if expr(^actor(:role) == :admin)
-        authorize_if CheerfulDonor.Accounts.Checks.AdminHasNoChurch
-      end
+    # Only admin can create
+    policy action(:create) do
+      authorize_if expr(^actor(:role) == :admin)
+      authorize_if CheerfulDonor.Accounts.Checks.AdminHasNoChurch
     end
 
-    # Only the owning admin can read/update/delete
-    policy action([:read, :update, :destroy]) do
+    # Only owning admin can update/delete
+    policy action([:update, :destroy]) do
       authorize_if expr(user_id == ^actor(:id))
     end
   end

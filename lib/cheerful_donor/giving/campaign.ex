@@ -20,6 +20,18 @@ defmodule CheerfulDonor.Giving.Campaign do
       create: [:title, :description, :goal_amount, :is_active, :church_id, :slug],
       update: [:title, :description, :goal_amount, :is_active]
     ]
+
+    read :by_slug do
+      argument :slug, :string, allow_nil?: false
+      get? true
+      filter expr(slug == ^arg(:slug))
+    end
+
+    read :list_active do
+      filter expr(is_active == true)
+      prepare build(load: [:church])
+    end
+
     read :list_for_church do
       argument :church_id, :uuid
 
