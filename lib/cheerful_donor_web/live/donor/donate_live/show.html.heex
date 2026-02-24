@@ -1,7 +1,10 @@
 <div class="max-w-4xl mx-auto p-6">
     <div class="bg-white shadow-xl rounded-2xl p-8">
-
-      <h1 class="text-3xl font-bold mb-2">
+      <p class="text-gray-700 text-center">
+        Donating as:
+        <span class="font-semibold"><%= @donor.user && @donor.user.email %></span>
+      </p>
+      <h1 class="text-3xl text-gray-500 font-bold mb-2">
         <%= @campaign.title %>
       </h1>
 
@@ -26,22 +29,22 @@
       <% end %>
 
       <div class="border-t pt-6">
-        <h2 class="text-xl font-semibold mb-4">Make a Donation</h2>
+        <h2 class="text-xl font-semibold mb-4 text-gray-500">Make a Donation</h2>
 
-        <form phx-submit="donate">
-          <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">Amount</label>
-            <input
-              type="number"
-              name="amount"
-              required
-              class="w-full border rounded-lg px-4 py-2"
-            />
-          </div>
+        <form phx-submit="start_payment">
+          <input
+            type="number"
+            name="amount"
+            value={@amount}
+            phx-change="set_amount"
+            placeholder="Enter amount"
+            class="w-full px-4 py-3 border rounded-lg text-gray-500"
+          />
+
 
           <button
             type="submit"
-            class="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition"
+            class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg"
           >
             Donate Now
           </button>
