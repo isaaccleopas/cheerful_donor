@@ -2,13 +2,17 @@
   <header class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold">
-        Welcome back, <%= @donor && get_in(@donor, [:user, :email]) || @user_email || "Donor" %>
+        Welcome back, <%= @user_email || "Donor" %>
       </h1>
     </div>
 
     <div class="flex items-center space-x-3">
-      <button phx-click="refresh" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md text-sm">Refresh</button>
-      <a href="/donor/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">Explore campaigns</a>
+      <button phx-click="refresh" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md text-sm">
+        Refresh
+      </button>
+      <a href="/donor/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
+        Explore campaigns
+      </a>
     </div>
   </header>
 
@@ -16,31 +20,53 @@
   <section class="grid grid-cols-3 gap-4 mb-6">
     <div class="bg-white p-4 rounded-lg shadow-sm">
       <div class="text-xs text-gray-500">Total Given</div>
-      <div class="text-xl text-gray-800 font-bold">₦<%= @totals.total_given || 0 %></div>
+      <div class="text-xl text-gray-800 font-bold">
+        ₦<%= @totals.total_given || 0 %>
+      </div>
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-sm">
       <div class="text-xs text-gray-500">This Month</div>
-      <div class="text-xl text-gray-800 font-bold">₦<%= @totals.this_month || 0 %></div>
+      <div class="text-xl text-gray-800 font-bold">
+        ₦<%= @totals.this_month || 0 %>
+      </div>
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-sm">
       <div class="text-xs text-gray-500">Active Subscriptions</div>
-      <div class="text-xl text-gray-800 font-bold"><%= length(@subscriptions || []) %></div>
+      <div class="text-xl text-gray-800 font-bold">
+        <%= length(@subscriptions || []) %>
+      </div>
     </div>
   </section>
 
   <!-- Tabs -->
   <nav class="mb-4">
     <div class="inline-flex bg-gray-100 rounded-md p-1">
-      <button phx-click="set_tab" phx-value-tab="donations" class={"px-4 py-2 text-sm rounded-md " <> (if @tab == "donations", do: "bg-white shadow", else: "text-gray-600")}>Donations</button>
-      <button phx-click="set_tab" phx-value-tab="subscriptions" class={"px-4 py-2 text-sm rounded-md " <> (if @tab == "subscriptions", do: "bg-white shadow", else: "text-gray-600")}>Subscriptions</button>
-      <button phx-click="set_tab" phx-value-tab="transactions" class={"px-4 py-2 text-sm rounded-md " <> (if @tab == "transactions", do: "bg-white shadow", else: "text-gray-600")}>Transactions</button>
+      <button phx-click="set_tab" phx-value-tab="donations"
+        class={"px-4 py-2 text-sm rounded-md " <>
+          (if @tab == "donations", do: "bg-white shadow", else: "text-gray-600")}>
+        Donations
+      </button>
+
+      <button phx-click="set_tab" phx-value-tab="subscriptions"
+        class={"px-4 py-2 text-sm rounded-md " <>
+          (if @tab == "subscriptions", do: "bg-white shadow", else: "text-gray-600")}>
+        Subscriptions
+      </button>
+
+      <button phx-click="set_tab" phx-value-tab="transactions"
+        class={"px-4 py-2 text-sm rounded-md " <>
+          (if @tab == "transactions", do: "bg-white shadow", else: "text-gray-600")}>
+        Transactions
+      </button>
     </div>
   </nav>
 
   <!-- Tab content -->
   <section>
+
+    <!-- Donations -->
     <%= if @tab == "donations" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Donations</h2>
@@ -62,25 +88,29 @@
             </thead>
             <tbody>
               <%= for d <- @donations || [] do %>
-                <tr class="border-b">
-                  <td class="text-gray-800 py-2"><%= d.reference || "-" %></td>
-                  <td class="text-gray-800 py-2"><%= (d.campaign && d.campaign.title) || "General" %></td>
-                  <td class="text-gray-800 py-2">₦<%= d.amount_paid || d.amount %></td>
-                  <td class="text-gray-800 py-2">
-                      <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
-                          <%= d.status %>
-                      </span>
+                <tr class="border-b text-gray-800">
+                  <td class="py-2"><%= d.reference || "-" %></td>
+                  <td class="py-2">
+                    <%= if d.campaign, do: d.campaign.title, else: "General" %>
                   </td>
-                  <td class="text-gray-800 text-gray-800 py-2"><%= format_datetime(d.inserted_at) %></td>
+                  <td class="py-2">₦<%= d.amount_paid || d.amount %></td>
+                  <td class="py-2">
+                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
+                      <%= d.status %>
+                    </span>
+                  </td>
+                  <td class="py-2">
+                    <%= format_datetime(d.inserted_at) %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>
           </table>
         <% end %>
       </div>
-
     <% end %>
 
+    <!-- Subscriptions -->
     <%= if @tab == "subscriptions" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Subscriptions</h2>
@@ -102,20 +132,16 @@
             </thead>
             <tbody>
               <%= for s <- @subscriptions do %>
-                <tr class="border-b">
-                  <td class="text-gray-800 py-2">
-                    <%= s.subscription_code || "N/A" %>
+                <tr class="border-b text-gray-800">
+                  <td class="py-2"><%= s.subscription_code || "N/A" %></td>
+                  <td class="py-2">₦<%= s.amount %></td>
+                  <td class="py-2"><%= s.interval %></td>
+                  <td class="py-2">
+                    <%= if s.next_charge_at,
+                          do: format_datetime(s.next_charge_at),
+                          else: "-" %>
                   </td>
-                  <td class="text-gray-800 py-2">
-                    ₦<%= s.amount %>
-                  </td>
-                  <td class="text-gray-800 py-2">
-                    <%= s.interval %>
-                  </td>
-                  <td class="text-gray-800 py-2">
-                    <%= if s.next_charge_at, do: format_datetime(s.next_charge_at), else: "-" %>
-                  </td>
-                  <td class="text-gray-800 py-2">
+                  <td class="py-2">
                     <span class={"text-xs px-2 py-1 rounded #{status_label_class(s.status)}"}>
                       <%= s.status %>
                     </span>
@@ -128,6 +154,7 @@
       </div>
     <% end %>
 
+    <!-- Transactions -->
     <%= if @tab == "transactions" do %>
       <div class="bg-white rounded-lg shadow-sm p-4">
         <h2 class="text-lg text-gray-800 font-medium mb-4">Your Transactions</h2>
@@ -149,22 +176,24 @@
             </thead>
             <tbody>
               <%= for t <- @transactions || [] do %>
-                <tr class="border-b">
-                  <td class="text-gray-800 py-2"><%= t.reference || "-" %></td>
-                  <td class="text-gray-800 py-2">₦<%= t.amount %></td>
-                  <td class="text-gray-800 py-2">
-                  <%= cond do %>
-                      <% t.donation_id -> %> Donation
-                      <% t.subscription_id -> %> Subscription
-                      <% true -> %> Other
-                  <% end %>
+                <tr class="border-b text-gray-800">
+                  <td class="py-2"><%= t.reference || "-" %></td>
+                  <td class="py-2">₦<%= t.amount %></td>
+                  <td class="py-2">
+                    <%= cond do
+                      t.donation_id -> "Donation"
+                      t.subscription_id -> "Subscription"
+                      true -> "Other"
+                    end %>
                   </td>
-                  <td class="text-gray-800 py-2">
-                      <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
-                          <%= t.status %>
-                      </span>
+                  <td class="py-2">
+                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
+                      <%= t.status %>
+                    </span>
                   </td>
-                  <td class="text-gray-800 py-2"><%= format_datetime(t.paid_at || t.inserted_at) %></td>
+                  <td class="py-2">
+                    <%= format_datetime(t.paid_at || t.inserted_at) %>
+                  </td>
                 </tr>
               <% end %>
             </tbody>
@@ -172,5 +201,6 @@
         <% end %>
       </div>
     <% end %>
+
   </section>
 </div>

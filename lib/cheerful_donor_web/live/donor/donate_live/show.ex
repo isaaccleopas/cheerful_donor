@@ -16,7 +16,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
       |> Ash.read_one!()
 
     user = socket.assigns.current_user
-    user_id = user && user.id
+    user_id = user.id
 
     donor =
       if user_id do
@@ -28,15 +28,22 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
         nil
       end
 
-    {:ok,
-     socket
-     |> assign(:campaign, campaign)
-     |> assign(:donor, donor)
-     |> assign(:amount, nil)
-     |> assign(:loading, false)
-     |> assign(:paid, false)}
-  end
+    socket =
+      socket
+      |> assign(:campaign, campaign)
+      |> assign(:user_id, user_id)
+      |> assign(:donor, donor)
+      |> assign(:amount, nil)
+      |> assign(:paid, false)
+      |> assign(:loading, false)
 
+    # Subscribe to donor events for real-time update
+    if connected?(socket) and donor do
+      Phoenix.PubSub.subscribe(CheerfulDonor.PubSub, "donor:#{donor.id}")
+    end
+
+    {:ok, socket}
+  end
   # ========================
   # Amount Selection
   # ========================
@@ -77,7 +84,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
           status: :pending,
           reference: reference,
           donor_id: donor.id,
-          campaign_id: campaign.id   # ✅ attach campaign
+          campaign_id: campaign.id
         })
 
       case Ash.create(changeset) do
@@ -90,22 +97,37 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
               "/paystack/callback?donor_token=#{donor_token}"
 
           params = %{
-            email: socket.assigns.current_user.email,
+            email: to_string(socket.assigns.current_user.email),
             amount: int_amount * 100,
             reference: intent.reference,
             callback_url: callback_url
           }
 
           case Client.initialize_transaction(params) do
-            {:ok, %{"data" => %{"authorization_url" => url}}} ->
-              {:noreply,
-               socket
-               |> assign(:loading, true)
-               |> redirect(external: url)}
+            {:ok, response} ->
 
-            {:error, _} ->
+              case response do
+                %{"status" => true, "data" => %{"authorization_url" => url}} ->
+
+                  {:noreply,
+                  socket
+                  |> assign(:loading, true)
+                  |> redirect(external: url)}
+
+                %{"status" => false, "message" => message} ->
+                  {:noreply,
+                  put_flash(socket, :error, "Paystack error: #{message}")}
+
+                _ ->
+                  {:noreply,
+                  put_flash(socket, :error, "Unexpected Paystack response")}
+              end
+
+            {:error, reason} ->
+              IO.inspect(reason, label: "PAYSTACK ERROR")
+
               {:noreply,
-               put_flash(socket, :error, "Payment initialization failed")}
+              put_flash(socket, :error, "Payment initialization failed")}
           end
 
         {:error, error} ->
@@ -116,5 +138,14 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
       :error ->
         {:noreply, put_flash(socket, :error, "Invalid amount")}
     end
+  end
+
+  @impl true
+  def handle_info({:donation_confirmed, _donation_id}, socket) do
+    {:noreply,
+    socket
+    |> put_flash(:info, "Donation successful! Thank you.")
+    |> assign(:paid, true)
+    |> assign(:loading, false)}
   end
 end

@@ -14,10 +14,10 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
     if user do
 
       donor =
-        case Accounts.get_donor_by_user_id(user.id) do
-          nil -> nil
-          donor -> donor
-        end
+        Accounts.get_donor_by_user_id(
+          user.id,
+          actor: %{id: user.id}
+        )
 
       donations =
         if donor, do: Giving.get_donations_for_donor(donor.id) || [], else: []
