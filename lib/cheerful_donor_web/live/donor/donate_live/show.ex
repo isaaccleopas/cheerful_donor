@@ -61,7 +61,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
     {:noreply,
      socket
      |> put_flash(:error, "You must be logged in to donate.")
-     |> push_navigate(to: "/sign-in")}
+     |> push_navigate(to: "/")}
   end
 
   def handle_event("start_payment", _, %{assigns: %{amount: nil}} = socket) do

@@ -1,55 +1,41 @@
-<div class="max-w-4xl mx-auto p-6">
-    <div class="bg-white shadow-xl rounded-2xl p-8">
-      <p class="text-gray-700 text-center">
-        Donating as:
-        <span class="font-semibold"><%= @donor.user && @donor.user.email %></span>
-      </p>
-      <h1 class="text-3xl text-gray-500 font-bold mb-2">
-        <%= @campaign.title %>
-      </h1>
+<div class="border-t pt-6">
+  <h2 class="text-xl font-semibold mb-4 text-gray-500">Make a Donation</h2>
 
-      <p class="text-gray-500 text-sm mb-4">
-        Church: <%= @campaign.church && @campaign.church.name %>
-      </p>
+  <form phx-submit="start_payment" phx-change="update_form">
 
-      <p class="text-gray-700 mb-6">
-        <%= @campaign.description %>
-      </p>
+    <%= unless @donor do %>
+      <input
+        type="text"
+        name="guest_name"
+        value={@guest_name}
+        placeholder="Your Name"
+        class="w-full mb-3 px-4 py-3 border rounded-lg text-gray-500"
+      />
 
-      <%= if @campaign.goal_amount do %>
-        <div class="mb-6">
-          <p class="text-sm text-gray-500 mb-1">
-            Goal: ₦<%= @campaign.goal_amount %>
-          </p>
+      <input
+        type="email"
+        name="guest_email"
+        value={@guest_email}
+        placeholder="Your Email"
+        required
+        class="w-full mb-3 px-4 py-3 border rounded-lg text-gray-500"
+      />
+    <% end %>
 
-          <div class="w-full bg-gray-200 rounded-full h-3">
-            <div class="bg-indigo-600 h-3 rounded-full" style="width: 0%"></div>
-          </div>
-        </div>
-      <% end %>
+    <input
+      type="number"
+      name="amount"
+      value={@amount}
+      placeholder="Enter amount"
+      required
+      class="w-full px-4 py-3 border rounded-lg text-gray-500"
+    />
 
-      <div class="border-t pt-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-500">Make a Donation</h2>
-
-        <form phx-submit="start_payment">
-          <input
-            type="number"
-            name="amount"
-            value={@amount}
-            phx-change="set_amount"
-            placeholder="Enter amount"
-            class="w-full px-4 py-3 border rounded-lg text-gray-500"
-          />
-
-
-          <button
-            type="submit"
-            class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg"
-          >
-            Donate Now
-          </button>
-        </form>
-      </div>
-
-    </div>
-  </div>
+    <button
+      type="submit"
+      class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg"
+    >
+      Donate Now
+    </button>
+  </form>
+</div>
