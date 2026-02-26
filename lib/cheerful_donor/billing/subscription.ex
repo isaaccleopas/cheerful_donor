@@ -17,6 +17,8 @@ defmodule CheerfulDonor.Billing.Subscription do
       :status,
       :next_charge_at,
       :donor_id,
+      :church_id,
+      :campaign_id,
       :payment_method_id,
       :subscription_code
     ],
@@ -61,6 +63,8 @@ defmodule CheerfulDonor.Billing.Subscription do
 
   relationships do
     belongs_to :donor, CheerfulDonor.Accounts.Donor
+    belongs_to :church, CheerfulDonor.Accounts.Church
+    belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
     belongs_to :payment_method, CheerfulDonor.Billing.PaymentMethod
 
     has_many :transactions, CheerfulDonor.Payments.Transaction

@@ -22,12 +22,17 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
       donations =
         if donor, do: Giving.get_donations_for_donor(donor.id) || [], else: []
 
+      IO.inspect(donations, label: "Donations for donor #{donor && donor.id}")
+
       subscriptions =
         if donor, do: Billing.get_subscriptions_for_donor(donor.id) || [], else: []
+
+      IO.inspect(subscriptions, label: "Subscriptions for donor #{donor && donor.id}")
 
       transactions =
         if donor, do: Payments.get_transactions_for_donor(donor.id) || [], else: []
 
+      IO.inspect(transactions, label: "Transactions for donor #{donor && donor.id}")
       totals = calc_totals(donations)
 
       if connected?(socket) and donor do

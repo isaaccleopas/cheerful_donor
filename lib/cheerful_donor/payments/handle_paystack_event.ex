@@ -81,15 +81,16 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
         {:ok, donation} <-
           Giving.create_donation(
             %{
-              donor_id: intent.donor_id,
-              campaign_id: intent.campaign_id,
-              amount: amount,
-              currency: intent.currency,
-              reference: intent.reference,
-              donation_intent_id: intent.id,
-              type: :one_time,
-              status: :successful
-            },
+                donor_id: intent.donor_id,
+                campaign_id: intent.campaign_id,
+                church_id: intent.church_id,
+                amount: amount,
+                currency: intent.currency,
+                reference: intent.reference,
+                donation_intent_id: intent.id,
+                type: :one_time,
+                status: :successful
+              },
             context: %{system: true}
           ),
         {:ok, _txn} <-
@@ -178,11 +179,13 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
           Giving.create_donation(
             %{
               donor_id: donor.id,
-              type: :recurring,
+              church_id: sub.church_id,
+              campaign_id: sub.campaign_id,
               amount: amount,
               currency: "NGN",
               status: :successful,
-              reference: "sub-" <> subscription_code
+              reference: "sub-" <> subscription_code,
+              type: :recurring
             },
             context: %{system: true}
           ),

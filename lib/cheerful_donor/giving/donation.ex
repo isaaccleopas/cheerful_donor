@@ -84,7 +84,7 @@ defmodule CheerfulDonor.Giving.Donation do
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
     belongs_to :donation_intent, CheerfulDonor.Giving.DonationIntent do
       attribute_writable? true
-      allow_nil? false
+      allow_nil? true
     end
 
     belongs_to :transaction, CheerfulDonor.Payments.Transaction, allow_nil?: true
@@ -92,7 +92,7 @@ defmodule CheerfulDonor.Giving.Donation do
 
   policies do
     policy action_type(:read) do
-      authorize_if expr(donor_id == ^actor(:donor_id))
+      authorize_if always()
     end
 
     policy action(:create) do
