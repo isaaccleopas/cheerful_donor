@@ -1,8 +1,6 @@
 defmodule CheerfulDonorWeb.Admin.ChurchLive do
   use CheerfulDonorWeb, :live_view
 
-  alias CheerfulDonor.Accounts
-
   @impl true
   def mount(_params, _session, socket) do
     authorize_admin!(socket)
@@ -25,7 +23,7 @@ defmodule CheerfulDonorWeb.Admin.ChurchLive do
     case CheerfulDonor.Accounts.Church
         |> Ash.Changeset.for_create(:create, params, actor: user)
         |> Ash.create() do
-      {:ok, church} ->
+      {:ok, _church} ->
         {:noreply,
         socket
         |> put_flash(:info, "Church created successfully")

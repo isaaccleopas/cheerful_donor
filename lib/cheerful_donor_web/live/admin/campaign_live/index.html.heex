@@ -1,9 +1,11 @@
 <div class="space-y-4">
   <%= for campaign <- @campaigns do %>
     <div class="card p-4 border rounded">
-      <h3 class="font-semibold text-lg">
-        <%= campaign.title %>
-      </h3>
+      <.link navigate={~p"/admin/campaigns/#{campaign.id}"}>
+        <h3 class="font-semibold text-lg">
+          <%= campaign.title %>
+        </h3>
+      </.link>
 
       <span class="text-xs px-2 py-1 rounded bg-gray-600">
         <%= String.capitalize(to_string(campaign.type)) %>

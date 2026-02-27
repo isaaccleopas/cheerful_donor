@@ -16,10 +16,26 @@
   </div>
 <% else %>
 
-<div class="space-y-8">
-  <h1 class="text-2xl font-bold">
-    <%= @church.name %> Dashboard
-  </h1>
+<div class="space-y-8 p-6">
+  <header class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">
+        <%= @church.name %> Dashboard
+      </h1>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <a href="/admin/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
+        Campaigns
+      </a>
+      <a href="/admin/campaigns/new" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
+        New Campaign
+      </a>
+      <a href="/sign-out" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
+        Logout
+      </a>
+    </div>
+  </header>
 
   <!-- Stats -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
