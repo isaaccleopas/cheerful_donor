@@ -40,6 +40,10 @@ defmodule CheerfulDonor.Paystack.Client do
       {:error, %HTTPoison.Error{reason: reason}} ->
         Logger.error("Paystack request error: #{inspect(reason)}")
         {:error, %{error: :network_error, reason: reason}}
+
+      unexpected ->
+        Logger.error("Unexpected Paystack request response: #{inspect(unexpected)}")
+        {:error, %{error: :unexpected_response, response: unexpected}}
     end
   end
 
@@ -109,5 +113,60 @@ defmodule CheerfulDonor.Paystack.Client do
     ]
 
     request(:post, url, body, headers)
+  end
+
+  @doc """
+  Create a subscription for a customer on Paystack.
+  Params must include:
+    - :customer_code (string)
+    - :plan_code (string)
+    - :authorization (string, optional for new customer card)
+  """
+  def create_subscription(%{customer_code: customer, plan_code: plan_code} = params) do
+    url = "#{@paystack_url}/subscription"
+
+    body =
+      %{
+        customer: customer,
+        plan: plan_code   # 🔥 THIS IS THE FIX
+      }
+      |> then(fn map ->
+        case Map.get(params, :authorization) do
+          nil -> map
+          auth -> Map.put(map, :authorization, auth)
+        end
+      end)
+      |> Jason.encode!()
+
+    request(:post, url, body)
+  end
+
+  def create_plan(name, amount, interval) do
+    url = "#{@paystack_url}/plan"
+
+    body =
+      Jason.encode!(%{
+        name: name,
+        amount: amount * 100,
+        interval: to_string(interval)
+      })
+
+    request(:post, url, body)
+  end
+
+  @doc """
+  Create a new customer on Paystack.
+  Expects a map with :email, :first_name, :last_name, :phone keys.
+  """
+  def create_customer(params) do
+    required_keys = [:email, :first_name, :last_name, :phone]
+
+    if Enum.all?(required_keys, &Map.has_key?(params, &1)) do
+      url = "#{@paystack_url}/customer"
+      body = Jason.encode!(params)
+      request(:post, url, body)
+    else
+      {:error, %{error: :missing_required_params}}
+    end
   end
 end

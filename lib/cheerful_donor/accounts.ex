@@ -64,4 +64,19 @@ defmodule CheerfulDonor.Accounts do
     |> Ash.read_one!(actor: actor)
   end
 
+  def update_donor(%Donor{} = donor, attrs, opts \\ []) do
+    donor
+    |> Ash.Changeset.for_update(:update, attrs)
+    |> Ash.update(opts)
+  end
+
+  @doc """
+  Fetch a donor by their Paystack customer code.
+  """
+  def get_donor_by_paystack_customer_id(customer_code) do
+    Donor
+    |> Ash.Query.for_read(:read, load: [:user])
+    |> Ash.Query.filter(paystack_customer_id == ^customer_code)
+    |> Ash.read_one()
+  end
 end

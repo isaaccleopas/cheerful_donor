@@ -128,28 +128,30 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   # SUBSCRIPTION CREATED (subscription.create)
   # ------------------------------------------------------------
   defp handle_subscription_create(%{
-         "data" => %{
-           "subscription_code" => subscription_code,
-           "customer" => %{"email" => email}
-         }
-       }) do
+        "data" => %{
+          "subscription_code" => subscription_code,
+          "customer" => %{"customer_code" => customer_code}
+        }
+      }) do
 
-    with {:ok, donor} <- Accounts.get_donor_by_email(email) do
-      Billing.get_subscription_by_code(subscription_code)
-      |> case do
-        {:ok, _sub} ->
-          :already_exists
+    case Accounts.get_donor_by_paystack_customer_id(customer_code) do
+      nil ->
+        Logger.warning("Donor not found for subscription.create customer_code=#{customer_code}")
 
-        _ ->
-          Billing.create_subscription(%{
-            donor_id: donor.id,
-            subscription_code: subscription_code,
-            status: :active
-          })
-      end
-    else
-      _ ->
-        Logger.warning("Donor not found for subscription.create email=#{email}")
+      donor ->
+        # Check if subscription already exists
+        case Billing.get_subscription_by_code(subscription_code) do
+          {:ok, _sub} ->
+            :already_exists
+
+          _ ->
+            # Create subscription in your DB using Paystack's subscription_code
+            Billing.create_subscription(%{
+              donor_id: donor.id,
+              subscription_code: subscription_code,
+              status: :active
+            })
+        end
     end
 
     :ok
