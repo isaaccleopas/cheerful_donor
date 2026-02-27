@@ -84,7 +84,8 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
           status: :pending,
           reference: reference,
           donor_id: donor.id,
-          campaign_id: campaign.id
+          campaign_id: campaign.id,
+          church_id: campaign.church_id
         })
 
       case Ash.create(changeset) do

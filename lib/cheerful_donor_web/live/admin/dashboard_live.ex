@@ -89,6 +89,7 @@ defmodule CheerfulDonorWeb.Admin.DashboardLive do
     |> Ash.Query.filter(church_id == ^church.id)
     |> Ash.Query.sort(inserted_at: :desc)
     |> Ash.Query.limit(10)
+    |> Ash.Query.load(:campaign)
     |> Ash.read!(actor: actor)
   end
 

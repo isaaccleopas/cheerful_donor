@@ -14,7 +14,7 @@ defmodule CheerfulDonor.Giving.Donation do
     defaults [
       :read,
       :destroy,
-      create: [:amount, :currency, :status, :reference, :message, :type, :donor_id, :church_id, :campaign_id, :donation_intent_id],
+      create: [:amount, :amount_paid, :currency, :status, :reference, :message, :type, :donor_id, :church_id, :campaign_id, :donation_intent_id],
       update: [:amount, :amount_paid, :status, :message, :paystack_id]
     ]
 

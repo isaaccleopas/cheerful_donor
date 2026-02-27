@@ -37,8 +37,6 @@ defmodule CheerfulDonorWeb.Router do
       live "/", HomeLive, :index
       live "/campaigns", CampaignLive.Index, :index
       live "/donate/:slug", DonateLive.Show
-      live "/donate/:slug/checkout", DonateLive.Checkout
-      live "/donate/success/:reference", DonateLive.Success
       live "/register", AuthLive.Index, :register
       live "/sign-in", AuthLive.Index, :sign_in
     end
