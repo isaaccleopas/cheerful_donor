@@ -54,7 +54,17 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
 
   @impl true
   def handle_event("set_interval", %{"interval" => interval}, socket) do
-    {:noreply, assign(socket, :interval, String.to_existing_atom(interval))}
+    allowed =
+      CheerfulDonor.Enums.subscription_intervals()
+      |> Enum.map(&to_string/1)
+
+    if interval in allowed do
+      {:noreply, assign(socket, :interval, String.to_atom(interval))}
+    else
+      {:noreply,
+      socket
+      |> put_flash(:error, "Invalid interval selected")}
+    end
   end
 
   @impl true
@@ -64,147 +74,106 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
 
   def handle_event("start_payment", _, %{assigns: %{donor: nil}} = socket) do
     {:noreply,
-     socket
-     |> put_flash(:error, "You must be logged in to donate.")
-     |> push_navigate(to: "/")}
+    socket
+    |> put_flash(:error, "You must be logged in to donate.")
+    |> push_navigate(to: "/")}
   end
 
   def handle_event("start_payment", _, %{assigns: %{amount: nil}} = socket) do
     {:noreply, put_flash(socket, :error, "Please enter an amount")}
   end
 
-  def handle_event("start_payment", _, %{assigns: %{amount: amount, donor: donor, campaign: campaign}} = socket) do
-    case Integer.parse(amount || "") do
-      {int_amount, _} ->
+  def handle_event("start_payment", _, socket) do
+    user = socket.assigns.current_user
+    donor = socket.assigns.donor
+    campaign = socket.assigns.campaign
+    amount = socket.assigns.amount
+    donation_type = String.to_atom(to_string(socket.assigns.donation_type || "one_time"))
 
-        if socket.assigns.donation_type == "recurring" do
-          # --- RECURRING DONATION FLOW ---
-          subscription_code = Ecto.UUID.generate()
+    cond do
+      is_nil(donor) ->
+        {:noreply,
+        socket
+        |> put_flash(:error, "You must be logged in to donate.")
+        |> push_navigate(to: "/")}
 
-          {:ok, paystack_customer} =
-            if donor.paystack_customer_id do
-              {:ok, donor.paystack_customer_id}
+      is_nil(amount) or amount == "" ->
+        {:noreply, put_flash(socket, :error, "Please enter an amount")}
+
+      true ->
+        case Integer.parse(amount) do
+          {int_amount, _} when int_amount > 0 ->
+            reference = Ecto.UUID.generate()
+
+            interval =
+              if donation_type == :recurring do
+                socket.assigns.interval || :monthly
+              else
+                nil
+              end
+
+            # Validate interval for recurring
+            allowed_intervals =
+              CheerfulDonor.Enums.subscription_intervals()
+              |> Enum.map(&to_string/1)
+
+            if donation_type == :recurring and to_string(interval) not in allowed_intervals do
+              {:noreply,
+              put_flash(socket, :error, "Invalid interval selected")}
             else
-              {:ok, customer} =
-                Client.create_customer(%{
-                  email: to_string(donor.user.email),
-                  first_name: donor.user.email |> to_string() |> String.split("@") |> hd(),
-                  last_name: "",
-                  phone: donor.phone
-                })
+              # Create DonationIntent
+              case DonationIntent
+                  |> Ash.Changeset.for_create(:create, %{
+                        donor_id: donor.id,
+                        campaign_id: campaign.id,
+                        church_id: campaign.church_id,
+                        amount: int_amount,
+                        currency: "NGN",
+                        status: :pending,
+                        reference: reference,
+                        type: donation_type,
+                        interval: interval
+                      })
+                  |> Ash.create() do
 
-              # <-- Now calls Ash-safe update
-              {:ok, _donor} =
-                Accounts.update_donor(donor, %{paystack_customer_id: customer["data"]["customer_code"]}, actor: %{id: donor.user_id})
+                {:ok, intent} ->
+                  # Generate donor token for Paystack callback
+                  donor_token = Phoenix.Token.sign(CheerfulDonorWeb.Endpoint, "donor auth", donor.id)
 
-              {:ok, customer["data"]["customer_code"]}
+                  callback_url =
+                    CheerfulDonorWeb.Endpoint.url() <> "/paystack/callback?donor_token=#{donor_token}"
+
+                  # Initialize Paystack transaction
+                  case Client.initialize_transaction(%{
+                        email: donor.user && to_string(donor.user.email) || "no-email@unknown.com",
+                        amount: int_amount * 100,
+                        reference: intent.reference,
+                        callback_url: callback_url
+                      }) do
+                    {:ok, %{"status" => true, "data" => %{"authorization_url" => url}}} ->
+                      {:noreply,
+                      socket
+                      |> assign(:loading, true)
+                      |> redirect(external: url)}
+
+                    {:ok, %{"status" => false, "message" => message}} ->
+                      {:noreply,
+                      put_flash(socket, :error, "Paystack error: #{message}")}
+
+                    {:error, reason} ->
+                      Logger.error("Paystack initialization error: #{inspect(reason)}")
+                      {:noreply, put_flash(socket, :error, "Payment initialization failed")}
+                  end
+
+                {:error, errors} ->
+                  Logger.error("Failed to create DonationIntent: #{inspect(errors)}")
+                  {:noreply, put_flash(socket, :error, "Failed to create donation.")}
+              end
             end
 
-          # 2. Create subscription record in DB
-          {:ok, _subscription} =
-            Billing.create_subscription(%{
-              donor_id: donor.id,
-              campaign_id: campaign.id,
-              church_id: campaign.church_id,
-              amount: int_amount,
-              interval: socket.assigns.interval || :monthly,
-              status: :active,
-              subscription_code: subscription_code
-            })
-
-          # 3. Prepare Paystack plan (must exist on Paystack dashboard)
-          {:ok, plan} =
-            Client.create_plan(
-              "#{campaign.title}-#{int_amount}",
-              int_amount,
-              socket.assigns.interval
-            )
-
-          plan_code = plan["data"]["plan_code"]
-
-          # 4. Create Paystack subscription
-          case Client.create_subscription(%{customer_code: paystack_customer, plan_code: plan_code}) do
-            {:ok, %{"data" => data}} ->
-
-              case data["authorization_url"] do
-                nil ->
-                  # Subscription activated instantly
-                  {:noreply,
-                  socket
-                  |> put_flash(:info, "Subscription activated successfully!")
-                  |> assign(:loading, false)}
-
-                url ->
-                  {:noreply,
-                  socket
-                  |> assign(:loading, true)
-                  |> redirect(external: url)}
-              end
-
-            {:error, reason} ->
-              IO.inspect(reason, label: "SUBSCRIPTION ERROR")
-
-              {:noreply,
-              socket
-              |> put_flash(:error, "Subscription setup failed")
-              |> assign(:loading, false)}
-          end
-
-        else
-          # --- ONE-TIME DONATION FLOW ---
-          reference = Ecto.UUID.generate()
-
-          changeset =
-            DonationIntent
-            |> Ash.Changeset.for_create(:create, %{
-              amount: int_amount,
-              currency: "NGN",
-              status: :pending,
-              reference: reference,
-              donor_id: donor.id,
-              campaign_id: campaign.id,
-              church_id: campaign.church_id
-            })
-
-          case Ash.create(changeset) do
-            {:ok, intent} ->
-              donor_token = Phoenix.Token.sign(CheerfulDonorWeb.Endpoint, "donor auth", donor.id)
-
-              callback_url =
-                CheerfulDonorWeb.Endpoint.url() <>
-                  "/paystack/callback?donor_token=#{donor_token}"
-
-              params = %{
-                email: to_string(donor.user.email),
-                amount: int_amount * 100,
-                reference: intent.reference,
-                callback_url: callback_url
-              }
-
-              case Client.initialize_transaction(params) do
-                {:ok, %{"status" => true, "data" => %{"authorization_url" => url}}} ->
-                  {:noreply,
-                  socket
-                  |> assign(:loading, true)
-                  |> redirect(external: url)}
-
-                {:ok, %{"status" => false, "message" => message}} ->
-                  {:noreply,
-                  put_flash(socket, :error, "Paystack error: #{message}")}
-
-                {:error, reason} ->
-                  IO.inspect(reason, label: "PAYSTACK ERROR")
-                  {:noreply, put_flash(socket, :error, "Payment initialization failed")}
-              end
-
-            {:error, error} ->
-              {:noreply,
-              put_flash(socket, :error, "Failed to create donation: #{inspect(error)}")}
-          end
+          _ ->
+            {:noreply, put_flash(socket, :error, "Invalid amount")}
         end
-
-      :error ->
-        {:noreply, put_flash(socket, :error, "Invalid amount")}
     end
   end
 

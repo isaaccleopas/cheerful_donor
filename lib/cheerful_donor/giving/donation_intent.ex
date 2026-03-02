@@ -14,7 +14,7 @@ defmodule CheerfulDonor.Giving.DonationIntent do
     defaults [:read, :destroy,
   ]
     create :create do
-      accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :meta, :donor_id, :campaign_id, :church_id]
+      accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :interval, :type, :meta, :donor_id, :campaign_id, :church_id]
     end
 
     update :mark_successful do
@@ -55,6 +55,18 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       public? true
       default :pending
       constraints one_of: CheerfulDonor.Enums.donation_statuses()
+    end
+
+    attribute :interval, :atom do
+      allow_nil? true
+      public? true
+      constraints one_of: CheerfulDonor.Enums.subscription_intervals()
+    end
+
+    attribute :type, :atom do
+      allow_nil? false
+      default :one_time
+      constraints one_of: [:one_time, :recurring]
     end
     attribute :meta, :map, public?: true
     timestamps()
