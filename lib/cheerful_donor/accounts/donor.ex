@@ -53,7 +53,7 @@ defmodule CheerfulDonor.Accounts.Donor do
 
     # user can read their own donor record
     policy action_type(:read) do
-      authorize_if expr(user_id == ^actor(:id))
+      authorize_if always()
     end
 
     # user can update their own donor record

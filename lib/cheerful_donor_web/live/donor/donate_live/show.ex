@@ -6,7 +6,6 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Accounts.Donor
   alias CheerfulDonor.Paystack.Client
-  alias CheerfulDonor.Billing
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
