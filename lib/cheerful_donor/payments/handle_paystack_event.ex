@@ -1,12 +1,6 @@
 defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   @moduledoc """
   Maps Paystack webhook events to internal flows.
-
-  Handles:
-    - One-time donations (`charge.success`)
-    - Subscription created (`subscription.create`)
-    - Recurring payments (`invoice.payment_succeeded`)
-    - Failed recurring payments (`invoice.payment_failed`)
   """
 
   require Logger
@@ -28,18 +22,10 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   def process(payload, webhook_event \\ nil) do
     result =
       case payload["event"] do
-        "charge.success" ->
-          handle_charge_success(payload)
-
-        "subscription.create" ->
-          handle_subscription_create(payload)
-
-        "invoice.payment_succeeded" ->
-          handle_subscription_payment(payload)
-
-        "invoice.payment_failed" ->
-          handle_payment_failed(payload)
-
+        "charge.success" -> handle_charge_success(payload)
+        "subscription.create" -> handle_subscription_create(payload)
+        "invoice.payment_succeeded" -> handle_subscription_payment(payload)
+        "invoice.payment_failed" -> handle_payment_failed(payload)
         event ->
           Logger.info("Ignoring unknown Paystack event: #{event}")
           :ignored
@@ -53,7 +39,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   end
 
   # ------------------------------------------------------------
-  # ONE TIME PAYMENT (charge.success)
+  # charge.success
   # ------------------------------------------------------------
 
   defp handle_charge_success(%{
@@ -86,7 +72,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
         :already_processed
 
       {:error, error} ->
-        Logger.error("charge.success processing failed #{inspect(error)}")
+        Logger.error("charge.success failed #{inspect(error)}")
         {:error, error}
     end
   end
@@ -101,7 +87,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
          |> Ash.read_one() do
       {:ok, nil} -> {:error, :intent_missing}
       {:ok, intent} -> {:ok, intent}
-      {:error, error} -> {:error, error}
+      {:error, err} -> {:error, err}
     end
   end
 
@@ -180,7 +166,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   end
 
   # ------------------------------------------------------------
-  # SUBSCRIPTION CREATION
+  # Create Subscription
   # ------------------------------------------------------------
 
   defp maybe_create_subscription(intent, donor, customer_code, auth_code, amount) do
@@ -190,27 +176,29 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
       interval = intent.interval || :monthly
 
       with {:ok, plan_code} <- Plans.get_or_create(interval, intent.amount),
-          {:ok, %{"data" => sub_data}} <-
-            Client.create_subscription(%{
-              customer_code: customer_code,
-              plan_code: plan_code,
-              authorization: auth_code
-            }),
-          {:ok, next_charge_at, _offset} <- DateTime.from_iso8601(sub_data["next_payment_date"]) do
-        Billing.create_subscription(%{
-          donor_id: donor.id,
-          campaign_id: intent.campaign_id,
-          church_id: intent.church_id,
-          amount: amount,
-          interval: interval,
-          status: :active,
-          subscription_code: sub_data["subscription_code"],
-          next_charge_at: next_charge_at
-        })
+           {:ok, %{"data" => sub_data}} <-
+             Client.create_subscription(%{
+               customer_code: customer_code,
+               plan_code: plan_code,
+               authorization: auth_code
+             }),
+           {:ok, next_charge_at, _} <- DateTime.from_iso8601(sub_data["next_payment_date"]),
+           {:ok, _sub} <-
+             Billing.create_subscription(%{
+               donor_id: donor.id,
+               campaign_id: intent.campaign_id,
+               church_id: intent.church_id,
+               amount: amount,
+               interval: interval,
+               status: :active,
+               subscription_code: sub_data["subscription_code"],
+               next_charge_at: next_charge_at
+             }) do
+        :ok
       else
-        {:error, reason} ->
-          Logger.error("Failed to create subscription for #{intent.reference}: #{inspect(reason)}")
-          :error
+        error ->
+          Logger.error("Subscription creation failed #{inspect(error)}")
+          :ok
       end
     end
   end
@@ -252,15 +240,10 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
 
   defp handle_subscription_payment(%{
          "data" => %{
-           "subscription" => subscription_code,
-           "amount" => amount_kobo,
-           "status" => "success"
+           "subscription" => subscription_code
          }
        }) do
-    amount = div(amount_kobo, 100)
-
     with %Subscription{} = sub <- Billing.get_subscription_by_code!(subscription_code),
-         donor <- Billing.get_donor_by_subscription!(subscription_code),
          {:ok, _} <-
            sub
            |> Ash.Changeset.for_update(:update, %{

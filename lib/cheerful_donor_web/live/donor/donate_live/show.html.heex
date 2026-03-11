@@ -36,17 +36,29 @@
             <label class="block mb-2 text-gray-700 font-medium">Donation Type</label>
             <div class="flex gap-4 text-gray-700">
               <label>
-                <input type="radio" name="donation_type" value="one_time" checked phx-change="set_donation_type" />
-                One-time
+                <input
+                  type="radio"
+                  name="donation_type"
+                  value="one_time"
+                  checked={@donation_type == :one_time}
+                  phx-change="set_donation_type"
+                />
+                One Time
               </label>
               <label>
-                <input type="radio" name="donation_type" value="recurring" phx-change="set_donation_type" />
+                <input
+                  type="radio"
+                  name="donation_type"
+                  value="recurring"
+                  checked={@donation_type == :recurring}
+                  phx-change="set_donation_type"
+                />
                 Recurring
               </label>
             </div>
           </div>
 
-          <%= if @donation_type == "recurring" do %>
+          <%= if @donation_type == :recurring do %>
             <div class="mb-6">
               <label class="block mb-2 text-gray-700 font-medium">Interval</label>
               <select name="interval" phx-change="set_interval" class="w-full px-4 py-3 border rounded-lg text-gray-500">
@@ -62,6 +74,7 @@
             name="amount"
             value={@amount}
             phx-change="set_amount"
+            phx-debounce="500"
             placeholder="Enter amount"
             class="w-full px-4 py-3 border rounded-lg text-gray-500"
           />

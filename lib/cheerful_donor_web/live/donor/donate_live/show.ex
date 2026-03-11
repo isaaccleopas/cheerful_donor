@@ -48,7 +48,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
 
   @impl true
   def handle_event("set_donation_type", %{"donation_type" => type}, socket) do
-    {:noreply, assign(socket, :donation_type, type)}
+    {:noreply, assign(socket, :donation_type, String.to_atom(type))}
   end
 
   @impl true
