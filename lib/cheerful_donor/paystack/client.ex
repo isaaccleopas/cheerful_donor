@@ -169,4 +169,34 @@ defmodule CheerfulDonor.Paystack.Client do
       {:error, %{error: :missing_required_params}}
     end
   end
+
+  def create_transfer_recipient(params) do
+    url = "#{@paystack_url}/transferrecipient"
+
+    body =
+      Jason.encode!(%{
+        type: "nuban",
+        name: params["account_name"],
+        account_number: params["account_number"],
+        bank_code: params["bank_code"],
+        currency: "NGN"
+      })
+
+    request(:post, url, body)
+  end
+
+  def initiate_transfer(recipient_code, amount, reference) do
+    url = "#{@paystack_url}/transfer"
+
+    body =
+      Jason.encode!(%{
+        source: "balance",
+        amount: amount * 100,
+        recipient: recipient_code,
+        reference: reference,
+        reason: "Church donation payout"
+      })
+
+    request(:post, url, body)
+  end
 end

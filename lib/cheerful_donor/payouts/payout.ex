@@ -18,7 +18,8 @@ defmodule CheerfulDonor.Payouts.Payout do
       :paid_at,
       :reference,
       :church_id,
-      :bank_account_id
+      :bank_account_id,
+      :transfer_code
     ],
     update: [
       :status,
@@ -46,6 +47,10 @@ defmodule CheerfulDonor.Payouts.Payout do
       public? true
       default :pending
       constraints one_of: CheerfulDonor.Enums.payout_statuses()
+    end
+
+    attribute :transfer_code, :string do
+      public? true
     end
 
     attribute :paid_at, :utc_datetime, public?: true

@@ -239,19 +239,32 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   # ------------------------------------------------------------
 
   defp handle_subscription_payment(%{
-         "data" => %{
-           "subscription" => subscription_code
-         }
-       }) do
+    "data" => %{
+      "subscription" => subscription_code,
+      "amount" => amount_kobo
+    }
+  }) do
+    amount = div(amount_kobo, 100)
+
     with %Subscription{} = sub <- Billing.get_subscription_by_code!(subscription_code),
-         {:ok, _} <-
-           sub
-           |> Ash.Changeset.for_update(:update, %{
-             last_paid_at: DateTime.utc_now(),
-             status: :active
-           })
-           |> Ash.update(context: %{system: true}) do
-      Logger.info("Recurring payment received for #{subscription_code}")
+        {:ok, donation} <-
+          Giving.create_donation(%{
+            donor_id: sub.donor_id,
+            campaign_id: sub.campaign_id,
+            church_id: sub.church_id,
+            amount: amount,
+            currency: "NGN",
+            status: :successful,
+            type: :recurring
+          }),
+        {:ok, _} <-
+          sub
+          |> Ash.Changeset.for_update(:update, %{
+            last_paid_at: DateTime.utc_now(),
+            status: :active
+          })
+          |> Ash.update(context: %{system: true}) do
+      Logger.info("Recurring payment recorded #{subscription_code}")
     else
       error ->
         Logger.error("Recurring payment failed #{inspect(error)}")

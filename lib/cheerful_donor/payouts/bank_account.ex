@@ -15,6 +15,8 @@ defmodule CheerfulDonor.Payouts.BankAccount do
       :bank_name,
       :account_number,
       :account_name,
+      :bank_code,
+      :recipient_code,
       :church_id
     ],
     update: [
@@ -39,6 +41,15 @@ defmodule CheerfulDonor.Payouts.BankAccount do
 
     attribute :account_name, :string do
       allow_nil? false
+      public? true
+    end
+
+    attribute :bank_code, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :recipient_code, :string do
       public? true
     end
 
