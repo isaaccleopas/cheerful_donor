@@ -21,4 +21,20 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Show do
       share_url: url(~p"/donate/#{campaign.slug}")
     )}
   end
+
+  def handle_event("toggle", _params, socket) do
+    actor = socket.assigns.current_user
+    campaign = socket.assigns.campaign
+
+    new_state = !campaign.is_active
+
+    campaign
+    |> Ash.Changeset.for_update(:update, %{is_active: new_state})
+    |> Ash.update(actor: actor)
+
+    {:noreply,
+    socket
+    |> assign(:campaign, %{campaign | is_active: new_state})
+    |> put_flash(:info, if(new_state, do: "Campaign activated", else: "Campaign deactivated"))}
+  end
 end

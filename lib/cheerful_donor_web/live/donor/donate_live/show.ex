@@ -34,6 +34,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
       |> assign(:user_id, user_id)
       |> assign(:donor, donor)
       |> assign(:donation_type, :one_time)
+      |> assign(:interval, :monthly)
       |> assign(:amount, nil)
       |> assign(:paid, false)
       |> assign(:loading, false)

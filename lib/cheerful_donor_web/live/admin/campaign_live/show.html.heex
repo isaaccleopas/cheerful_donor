@@ -24,8 +24,12 @@
   class="w-full"
 />
 
-<div class="mt-4">
+<div class="mt-4 flex gap-4">
   <.link navigate={~p"/admin/campaigns/#{@campaign.id}/edit"}>
     Edit Campaign
   </.link>
+
+  <button phx-click="toggle">
+    <%= if @campaign.is_active, do: "Deactivate", else: "Activate" %>
+  </button>
 </div>

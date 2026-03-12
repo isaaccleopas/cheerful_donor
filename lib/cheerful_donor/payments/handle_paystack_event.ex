@@ -241,13 +241,15 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   defp handle_subscription_payment(%{
     "data" => %{
       "subscription" => subscription_code,
-      "amount" => amount_kobo
+      "amount" => amount_kobo,
+      "reference" => reference
     }
   }) do
     amount = div(amount_kobo, 100)
 
-    with %Subscription{} = sub <- Billing.get_subscription_by_code!(subscription_code),
-        {:ok, donation} <-
+    with {:ok, %Subscription{} = sub} <- Billing.get_subscription_by_code(subscription_code),
+        :ok <- ensure_not_processed(reference),
+        {:ok, _donation} <-
           Giving.create_donation(%{
             donor_id: sub.donor_id,
             campaign_id: sub.campaign_id,
@@ -255,7 +257,18 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
             amount: amount,
             currency: "NGN",
             status: :successful,
+            reference: reference,
             type: :recurring
+          }),
+        {:ok, _txn} <-
+          Payments.create_transaction(%{
+            donor_id: sub.donor_id,
+            amount: amount,
+            currency: "NGN",
+            status: :success,
+            payment_provider: :paystack,
+            reference: reference,
+            paid_at: DateTime.utc_now()
           }),
         {:ok, _} <-
           sub

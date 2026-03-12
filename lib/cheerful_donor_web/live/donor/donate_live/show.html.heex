@@ -61,7 +61,7 @@
           <%= if @donation_type == :recurring do %>
             <div class="mb-6">
               <label class="block mb-2 text-gray-700 font-medium">Interval</label>
-              <select name="interval" phx-change="set_interval" class="w-full px-4 py-3 border rounded-lg text-gray-500">
+              <select name="interval" value={@interval} phx-change="set_interval" class="w-full px-4 py-3 border rounded-lg text-gray-500">
                 <%= for interval <- [:daily, :weekly, :monthly, :quarterly, :annually] do %>
                   <option value={interval}><%= String.capitalize(to_string(interval)) %></option>
                 <% end %>
