@@ -14,6 +14,8 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Paystack.Client
   alias CheerfulDonor.Paystack.Plans
+  alias CheerfulDonor.Payouts
+  alias CheerfulDonor.Payouts.Payout
 
   # ------------------------------------------------------------
   # Entry Point
@@ -26,6 +28,8 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
         "subscription.create" -> handle_subscription_create(payload)
         "invoice.payment_succeeded" -> handle_subscription_payment(payload)
         "invoice.payment_failed" -> handle_payment_failed(payload)
+        "transfer.success" -> handle_transfer_success(payload)
+        "transfer.failed" -> handle_transfer_failed(payload)
         event ->
           Logger.info("Ignoring unknown Paystack event: #{event}")
           :ignored
@@ -306,5 +310,61 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
     end
 
     :ok
+  end
+
+  defp handle_transfer_success(%{
+    "data" => %{
+      "reference" => reference
+    }
+  }) do
+    case get_payout(reference) do
+      {:ok, payout} ->
+        IO.inspect(payout, label: "Payout found for transfer.success")
+        payout
+        |> Ash.Changeset.for_update(:update, %{
+          status: :success,
+          paid_at: DateTime.utc_now()
+        })
+        |> Ash.update(context: %{system: true})
+
+        Logger.info("Payout marked successful #{reference}")
+
+      {:error, :not_found} ->
+        Logger.warning("Payout not found for #{reference}")
+    end
+
+    :ok
+  end
+
+  defp handle_transfer_failed(%{
+    "data" => %{
+      "reference" => reference
+    }
+  }) do
+    case get_payout(reference) do
+      {:ok, payout} ->
+        payout
+        |> Ash.Changeset.for_update(:update, %{
+          status: :failed
+        })
+        |> Ash.update(context: %{system: true})
+
+        Logger.warning("Payout failed #{reference}")
+
+      {:error, :not_found} ->
+        Logger.warning("Payout not found for #{reference}")
+    end
+
+    :ok
+  end
+
+  defp get_payout(reference) do
+    case Payout
+        |> Ash.Query.filter(reference == ^reference)
+        |> Ash.read_one() do
+      {:ok, nil} -> {:error, :not_found}
+      {:ok, payout} -> {:ok, payout}
+      {:error, err} -> {:error, err}
+    end
   end
 end

@@ -1,0 +1,58 @@
+<div class="mb-8">
+  <h2 class="text-lg font-semibold mb-4">Bank Accounts</h2>
+
+  <div class="space-y-3">
+    <%= for account <- @bank_accounts do %>
+      <div class="flex items-center justify-between border p-4 rounded">
+        <div>
+          <div class="font-medium"><%= account.bank_name %></div>
+          <div class="text-sm text-gray-500">
+            <%= account.account_name %> • <%= account.account_number %>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            phx-click="edit"
+            phx-value-id={account.id}
+            class="text-blue-600"
+          >
+            Edit
+          </button>
+
+          <button
+            phx-click="delete"
+            phx-value-id={account.id}
+            class="text-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="mt-10">
+  <h2 class="text-lg font-semibold mb-4">
+    <%= if @editing_account, do: "Edit Bank Account", else: "Add Bank Account" %>
+  </h2>
+
+  <.form for={@form} phx-submit="save" class="space-y-4">
+
+    <.input field={@form[:bank_name]} label="Bank Name" />
+
+    <.input field={@form[:bank_code]} label="Bank Code" />
+
+    <.input field={@form[:account_name]} label="Account Name" />
+
+    <.input field={@form[:account_number]} label="Account Number" />
+
+    <div class="flex justify-end">
+      <.button class="bg-indigo-600 text-white">
+        Save Bank Account
+      </.button>
+    </div>
+
+  </.form>
+</div>

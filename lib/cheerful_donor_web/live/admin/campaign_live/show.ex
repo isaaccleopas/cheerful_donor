@@ -10,6 +10,7 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Show do
   def mount(_params, _session, socket) do
     {:ok, socket}
   end
+  
   @impl true
   def handle_params(%{"id" => id}, _url, socket) do
     campaign =
@@ -22,6 +23,7 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Show do
     )}
   end
 
+  @impl true
   def handle_event("toggle", _params, socket) do
     actor = socket.assigns.current_user
     campaign = socket.assigns.campaign

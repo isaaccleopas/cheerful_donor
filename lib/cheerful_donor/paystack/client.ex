@@ -199,4 +199,21 @@ defmodule CheerfulDonor.Paystack.Client do
 
     request(:post, url, body)
   end
+
+  def get_balance do
+    url = "#{@paystack_url}/balance"
+
+    case request(:get, url) do
+      {:ok, %{"data" => balances}} ->
+        ngn_balance =
+          balances
+          |> Enum.find(&(&1["currency"] == "NGN"))
+          |> Map.get("balance", 0)
+
+        {:ok, div(ngn_balance, 100)}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
 end

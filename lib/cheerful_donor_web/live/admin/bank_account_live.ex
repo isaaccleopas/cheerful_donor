@@ -9,7 +9,7 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive do
   @impl true
   def mount(_params, _session, socket) do
     actor = socket.assigns.current_user
-    {:ok, church} = get_church(actor)
+    {:ok, church} = Payouts.get_church(actor)
 
     ash_form =
       AshPhoenix.Form.for_create(
@@ -63,11 +63,5 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive do
         |> put_flash(:error, "Failed to create Paystack recipient")
         |> IO.inspect(reason)}
     end
-  end
-
-  defp get_church(actor) do
-    Accounts.Church
-    |> Ash.Query.filter(user_id == ^actor.id)
-    |> Ash.read_one(actor: actor)
   end
 end

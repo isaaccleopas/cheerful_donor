@@ -25,6 +25,11 @@
     </div>
 
     <div class="flex items-center space-x-3">
+      <%= for account <- @bank_accounts do %>
+        <button phx-click="payout" phx-value-id={account.id}>
+          Pay Out
+        </button>
+      <% end %>
       <a href="/admin/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
         Campaigns
       </a>

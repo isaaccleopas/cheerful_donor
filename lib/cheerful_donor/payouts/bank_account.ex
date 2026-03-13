@@ -22,7 +22,9 @@ defmodule CheerfulDonor.Payouts.BankAccount do
     update: [
       :bank_name,
       :account_number,
-      :account_name
+      :account_name,
+      :bank_code,
+      :recipient_code
     ]]
   end
 
