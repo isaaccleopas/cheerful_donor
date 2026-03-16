@@ -29,10 +29,11 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
     |> assign(:bank_accounts, bank_accounts)
     |> assign(:editing_account, nil)
     |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form))}
+    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
-  def handle_event("edit", %{"id" => id}, socket) do
+  @impl true
+  def handle_params(%{"id" => id}, _url, socket) do
     actor = socket.assigns.current_user
 
     bank_account =
@@ -49,10 +50,27 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
     socket
     |> assign(:editing_account, bank_account)
     |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form))}
+    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
-  def handle_event("save", %{"bank_account" => params}, socket) do
+  def handle_params(_params, _url, socket) do
+    actor = socket.assigns.current_user
+
+    ash_form =
+      AshPhoenix.Form.for_create(
+        Payouts.BankAccount,
+        :create,
+        actor: actor
+      )
+
+    {:noreply,
+    socket
+    |> assign(:editing_account, nil)
+    |> assign(:ash_form, ash_form)
+    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
+  end
+
+  def handle_event("save", %{"form" => params}, socket) do
     actor = socket.assigns.current_user
     church = socket.assigns.church
     editing_account = socket.assigns.editing_account
@@ -61,18 +79,19 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
 
     result =
       if editing_account do
-        # UPDATE (no Paystack call)
-        AshPhoenix.Form.submit(socket.assigns.ash_form,
+        AshPhoenix.Form.submit(
+          socket.assigns.ash_form,
           params: params,
           actor: actor
         )
       else
-        # CREATE (call Paystack)
         with {:ok, response} <- Client.create_transfer_recipient(params),
             recipient_code <- get_in(response, ["data", "recipient_code"]) do
+
           params = Map.put(params, "recipient_code", recipient_code)
 
-          AshPhoenix.Form.submit(socket.assigns.ash_form,
+          AshPhoenix.Form.submit(
+            socket.assigns.ash_form,
             params: params,
             actor: actor
           )
@@ -111,7 +130,7 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
 
     socket
     |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form))
+    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))
   end
 
   def handle_event("delete", %{"id" => id}, socket) do

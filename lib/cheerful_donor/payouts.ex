@@ -35,4 +35,10 @@ defmodule CheerfulDonor.Payouts do
     |> Ash.Query.filter(user_id == ^actor.id)
     |> Ash.read_one(actor: actor)
   end
+
+  def destroy_bank_account(bank_account, actor) do
+    bank_account
+    |> Ash.Changeset.for_destroy(:destroy)
+    |> Ash.destroy(actor: actor)
+  end
 end

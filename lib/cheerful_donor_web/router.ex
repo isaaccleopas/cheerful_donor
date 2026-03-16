@@ -78,8 +78,9 @@ defmodule CheerfulDonorWeb.Router do
       live "/church/new", ChurchLive, :new
       live "/church/edit", ChurchLive.Edit
 
-      live "/payouts/bank-accounts/new", BankAccountLive, :new
       live "/payouts/bank-accounts", BankAccountLive.Index, :index
+      live "/payouts/bank-accounts/new", BankAccountLive.Index, :new
+      live "/payouts/bank-accounts/:id/edit", BankAccountLive.Index, :edit
 
       live "/campaigns", CampaignLive.Index, :index
       live "/campaigns/new", CampaignLive.Form, :new

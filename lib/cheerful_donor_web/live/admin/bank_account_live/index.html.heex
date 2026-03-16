@@ -1,3 +1,5 @@
+<%= if @live_action == :index do %>
+
 <div class="mb-8">
   <h2 class="text-lg font-semibold mb-4">Bank Accounts</h2>
 
@@ -12,17 +14,17 @@
         </div>
 
         <div class="flex gap-2">
-          <button
-            phx-click="edit"
-            phx-value-id={account.id}
+          <.link
+            navigate={~p"/admin/payouts/bank-accounts/#{account.id}/edit"}
             class="text-blue-600"
           >
             Edit
-          </button>
+          </.link>
 
           <button
             phx-click="delete"
             phx-value-id={account.id}
+            data-confirm="Are you sure?"
             class="text-red-600"
           >
             Delete
@@ -31,11 +33,25 @@
       </div>
     <% end %>
   </div>
+
+  <div class="mt-6">
+    <.link
+      navigate={~p"/admin/payouts/bank-accounts/new"}
+      class="bg-indigo-600 text-white px-4 py-2 rounded"
+    >
+      Add Bank Account
+    </.link>
+  </div>
 </div>
+
+<% end %>
+
+
+<%= if @live_action in [:new, :edit] do %>
 
 <div class="mt-10">
   <h2 class="text-lg font-semibold mb-4">
-    <%= if @editing_account, do: "Edit Bank Account", else: "Add Bank Account" %>
+    <%= if @live_action == :edit, do: "Edit Bank Account", else: "Add Bank Account" %>
   </h2>
 
   <.form for={@form} phx-submit="save" class="space-y-4">
@@ -48,7 +64,11 @@
 
     <.input field={@form[:account_number]} label="Account Number" />
 
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-3">
+      <.link navigate={~p"/admin/payouts/bank-accounts"}>
+        Cancel
+      </.link>
+
       <.button class="bg-indigo-600 text-white">
         Save Bank Account
       </.button>
@@ -56,3 +76,5 @@
 
   </.form>
 </div>
+
+<% end %>
