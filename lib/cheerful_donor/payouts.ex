@@ -37,8 +37,6 @@ defmodule CheerfulDonor.Payouts do
   end
 
   def destroy_bank_account(bank_account, actor) do
-    bank_account
-    |> Ash.Changeset.for_destroy(:destroy)
-    |> Ash.destroy(actor: actor)
+    Ash.destroy(bank_account, actor: actor)
   end
 end

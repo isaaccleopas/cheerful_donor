@@ -22,14 +22,15 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       )
 
     {:ok,
-    socket
-    |> assign(:church, church)
-    |> assign(:bank_accounts, bank_accounts)
-    |> assign(:editing_account, nil)
-    |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
+     socket
+     |> assign(:church, church)
+     |> assign(:bank_accounts, bank_accounts)
+     |> assign(:editing_account, nil)
+     |> assign(:ash_form, ash_form)
+     |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
+  # EDIT
   def handle_params(%{"id" => id}, _url, socket) do
     actor = socket.assigns.current_user
 
@@ -44,12 +45,13 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       )
 
     {:noreply,
-    socket
-    |> assign(:editing_account, bank_account)
-    |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
+     socket
+     |> assign(:editing_account, bank_account)
+     |> assign(:ash_form, ash_form)
+     |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
+  # NEW / INDEX
   def handle_params(_params, _url, socket) do
     actor = socket.assigns.current_user
 
@@ -61,12 +63,13 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       )
 
     {:noreply,
-    socket
-    |> assign(:editing_account, nil)
-    |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
+     socket
+     |> assign(:editing_account, nil)
+     |> assign(:ash_form, ash_form)
+     |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
+  # SAVE (CREATE / UPDATE)
   def handle_event("save", %{"form" => params}, socket) do
     actor = socket.assigns.current_user
     church = socket.assigns.church
@@ -83,7 +86,8 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
         )
       else
         with {:ok, response} <- Client.create_transfer_recipient(params),
-            recipient_code <- get_in(response, ["data", "recipient_code"]) do
+             recipient_code when not is_nil(recipient_code) <-
+               get_in(response, ["data", "recipient_code"]) do
 
           params = Map.put(params, "recipient_code", recipient_code)
 
@@ -92,6 +96,9 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
             params: params,
             actor: actor
           )
+        else
+          error ->
+            {:error, error}
         end
       end
 
@@ -103,33 +110,27 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
           |> Ash.read!(actor: actor)
 
         {:noreply,
-        socket
-        |> put_flash(:info, "Bank account saved")
-        |> assign(:bank_accounts, bank_accounts)
-        |> assign(:editing_account, nil)
-        |> reset_form(actor)}
+         socket
+         |> put_flash(:info, "Bank account saved")
+         |> assign(:bank_accounts, bank_accounts)
+         |> push_patch(to: ~p"/admin/payouts/bank-accounts")}
 
       {:error, ash_form} ->
         {:noreply,
-        socket
-        |> assign(:ash_form, ash_form)
-        |> assign(:form, Phoenix.Component.to_form(ash_form))}
+         socket
+         |> assign(:ash_form, ash_form)
+         |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
+
+      {:error, error} ->
+        IO.inspect(error, label: "SAVE ERROR")
+
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to save bank account")}
     end
   end
 
-  defp reset_form(socket, actor) do
-    ash_form =
-      AshPhoenix.Form.for_create(
-        Payouts.BankAccount,
-        :create,
-        actor: actor
-      )
-
-    socket
-    |> assign(:ash_form, ash_form)
-    |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))
-  end
-
+  # DELETE
   def handle_event("delete", %{"id" => id}, socket) do
     actor = socket.assigns.current_user
     church = socket.assigns.church
@@ -138,21 +139,23 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       Payouts.get_bank_account!(id, actor)
 
     case Payouts.destroy_bank_account(bank_account, actor) do
-      :ok ->
+      {:ok, _} ->
         bank_accounts =
           Payouts.BankAccount
           |> Ash.Query.filter(church_id == ^church.id)
           |> Ash.read!(actor: actor)
 
         {:noreply,
-        socket
-        |> put_flash(:info, "Bank account deleted")
-        |> assign(:bank_accounts, bank_accounts)}
+         socket
+         |> put_flash(:info, "Bank account deleted")
+         |> assign(:bank_accounts, bank_accounts)}
 
-      {:error, _} ->
+      {:error, error} ->
+        IO.inspect(error, label: "DELETE ERROR")
+
         {:noreply,
-        socket
-        |> put_flash(:error, "Unable to delete bank account")}
+         socket
+         |> put_flash(:error, "Unable to delete bank account")}
     end
   end
 end
