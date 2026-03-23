@@ -87,7 +87,6 @@ defmodule CheerfulDonorWeb.Router do
       live "/campaigns/:id/edit", CampaignLive.Form, :edit
       live "/campaigns/:id", CampaignLive.Show, :show
 
-      live "/donations", DonationsLive.Index
       live "/payouts", PayoutsLive.Index
     end
   end

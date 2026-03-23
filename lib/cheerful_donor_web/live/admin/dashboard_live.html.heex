@@ -25,11 +25,12 @@
     </div>
 
     <div class="flex items-center space-x-3">
-      <%= for account <- @bank_accounts do %>
-        <button phx-click="payout" phx-value-id={account.id}>
-          Pay Out
-        </button>
-      <% end %>
+      <.link
+        navigate={~p"/admin/payouts"}
+        class="px-4 py-2 bg-indigo-600 text-white rounded"
+      >
+        Manage Payouts
+      </.link>
       <a href="/admin/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
         Campaigns
       </a>

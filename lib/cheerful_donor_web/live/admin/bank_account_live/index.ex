@@ -3,10 +3,8 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
 
   require Ash.Query
   alias CheerfulDonor.Payouts
-  alias CheerfulDonor.Accounts
   alias CheerfulDonor.Paystack.Client
 
-  @impl true
   def mount(_params, _session, socket) do
     actor = socket.assigns.current_user
     {:ok, church} = Payouts.get_church(actor)
@@ -32,7 +30,6 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
     |> assign(:form, Phoenix.Component.to_form(ash_form, as: "bank_account"))}
   end
 
-  @impl true
   def handle_params(%{"id" => id}, _url, socket) do
     actor = socket.assigns.current_user
 

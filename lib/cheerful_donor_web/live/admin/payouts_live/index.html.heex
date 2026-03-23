@@ -1,0 +1,38 @@
+<div class="max-w-2xl mx-auto p-6 space-y-6">
+
+  <h1 class="text-2xl font-bold">Payouts</h1>
+
+  <!-- Available Balance -->
+  <div class="p-4 border rounded bg-gray-50">
+    <div class="text-sm text-gray-500">Available Balance</div>
+    <div class="text-xl text-gray-500 font-semibold">₦<%= @balance %></div>
+  </div>
+
+  <!-- Select Bank -->
+  <.form for={@form} phx-submit="payout">
+
+    <label class="block text-sm font-medium">Select Bank Account</label>
+    <select name="bank_account_id" class="w-full border rounded p-2">
+      <%= for acc <- @bank_accounts do %>
+        <option value={acc.id}>
+          <%= acc.bank_name %> - <%= acc.account_number %>
+        </option>
+      <% end %>
+    </select>
+
+    <!-- Optional amount -->
+    <label class="block text-sm font-medium mt-4">Amount</label>
+    <input
+      type="number"
+      name="amount"
+      value={@balance}
+      class="w-full border rounded p-2"
+    />
+
+    <button class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded">
+      Withdraw
+    </button>
+
+  </.form>
+
+</div>

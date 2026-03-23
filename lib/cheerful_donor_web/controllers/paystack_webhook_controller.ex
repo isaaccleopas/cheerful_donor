@@ -1,6 +1,8 @@
 defmodule CheerfulDonorWeb.PaystackWebhookController do
   use CheerfulDonorWeb, :controller
 
+  require Ash.Query
+
   def handle(conn, _params) do
     raw_body = conn.assigns[:raw_body] || ""
 
@@ -21,21 +23,29 @@ defmodule CheerfulDonorWeb.PaystackWebhookController do
       payload = Jason.decode!(raw_body)
 
       Task.start(fn ->
-        case save_webhook_event(payload) do
-          {:ok, webhook_event} ->
-            result = CheerfulDonor.Payments.HandlePaystackEvent.process(payload)
+        if already_processed?(payload) do
+          :ok
+        else
+          case save_webhook_event(payload) do
+            {:ok, webhook_event} ->
+              CheerfulDonor.Payments.HandlePaystackEvent.process(payload, webhook_event)
 
-            if result != :ignored do
-              Ash.Changeset.for_update(webhook_event, :mark_processed, %{processed: true})
-              |> Ash.update!()
-            end
-
-          _ ->
-            CheerfulDonor.Payments.HandlePaystackEvent.process(payload)
+            _ ->
+              CheerfulDonor.Payments.HandlePaystackEvent.process(payload)
+          end
         end
       end)
 
       send_resp(conn, 200, "ok")
+    end
+  end
+
+  defp already_processed?(payload) do
+    case CheerfulDonor.Paystack.WebhookEvent
+        |> Ash.Query.filter(payload == ^payload)
+        |> Ash.read_one() do
+      {:ok, %{processed: true}} -> true
+      _ -> false
     end
   end
 

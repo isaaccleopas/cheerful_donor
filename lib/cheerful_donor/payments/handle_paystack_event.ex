@@ -312,22 +312,21 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
     :ok
   end
 
-  defp handle_transfer_success(%{
-    "data" => %{
-      "reference" => reference
-    }
-  }) do
+  defp handle_transfer_success(%{"data" => %{"reference" => reference}}) do
     case get_payout(reference) do
       {:ok, payout} ->
-        IO.inspect(payout, label: "Payout found for transfer.success")
-        payout
-        |> Ash.Changeset.for_update(:update, %{
-          status: :success,
-          paid_at: DateTime.utc_now()
-        })
-        |> Ash.update(context: %{system: true})
+        if payout.status == :success do
+          :already_processed
+        else
+          payout
+          |> Ash.Changeset.for_update(:update, %{
+            status: :success,
+            paid_at: DateTime.utc_now()
+          })
+          |> Ash.update(context: %{system: true})
 
-        Logger.info("Payout marked successful #{reference}")
+          Logger.info("Payout marked successful #{reference}")
+        end
 
       {:error, :not_found} ->
         Logger.warning("Payout not found for #{reference}")
@@ -336,20 +335,18 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
     :ok
   end
 
-  defp handle_transfer_failed(%{
-    "data" => %{
-      "reference" => reference
-    }
-  }) do
+  defp handle_transfer_failed(%{"data" => %{"reference" => reference}}) do
     case get_payout(reference) do
       {:ok, payout} ->
-        payout
-        |> Ash.Changeset.for_update(:update, %{
-          status: :failed
-        })
-        |> Ash.update(context: %{system: true})
+        if payout.status == :failed do
+          :already_processed
+        else
+          payout
+          |> Ash.Changeset.for_update(:update, %{status: :failed})
+          |> Ash.update(context: %{system: true})
 
-        Logger.warning("Payout failed #{reference}")
+          Logger.warning("Payout failed #{reference}")
+        end
 
       {:error, :not_found} ->
         Logger.warning("Payout not found for #{reference}")
