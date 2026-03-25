@@ -37,7 +37,9 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
       end
 
     if webhook_event && result in [:ok, :already_processed] do
-      Ash.update!(webhook_event, %{processed: true})
+      webhook_event
+      |> Ash.Changeset.for_update(:mark_processed, %{})
+      |> Ash.update!(context: %{system: true})
     end
 
     result

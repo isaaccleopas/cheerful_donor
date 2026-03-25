@@ -157,22 +157,28 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
 
     case Payouts.destroy_bank_account(bank_account, actor) do
       {:ok, _} ->
-        bank_accounts =
-          Payouts.BankAccount
-          |> Ash.Query.filter(church_id == ^church.id)
-          |> Ash.read!(actor: actor)
+        reload_accounts(socket, church, actor)
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Bank account deleted")
-         |> assign(:bank_accounts, bank_accounts)}
+      :ok ->
+        reload_accounts(socket, church, actor)
 
       {:error, error} ->
         IO.inspect(error, label: "DELETE ERROR")
 
         {:noreply,
-         socket
-         |> put_flash(:error, "Unable to delete bank account")}
+        put_flash(socket, :error, "Unable to delete bank account")}
     end
+  end
+
+  defp reload_accounts(socket, church, actor) do
+    bank_accounts =
+      Payouts.BankAccount
+      |> Ash.Query.filter(church_id == ^church.id)
+      |> Ash.read!(actor: actor)
+
+    {:noreply,
+    socket
+    |> put_flash(:info, "Bank account deleted")
+    |> assign(:bank_accounts, bank_accounts)}
   end
 end
