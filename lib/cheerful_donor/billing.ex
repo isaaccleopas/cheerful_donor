@@ -56,4 +56,18 @@ defmodule CheerfulDonor.Billing do
     |> Ash.Query.for_read(:for_donor, %{donor_id: donor_id})
     |> Ash.read!()
   end
+
+  def cancel_subscription(%Subscription{} = sub) do
+    with {:ok, _} <-
+          CheerfulDonor.Paystack.Client.disable_subscription(
+            sub.subscription_code,
+            sub.email_token
+          ),
+        {:ok, updated} <-
+          Ash.update(sub, %{status: :cancelled}) do
+      {:ok, updated}
+    else
+      error -> error
+    end
+  end
 end

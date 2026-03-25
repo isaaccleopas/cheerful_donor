@@ -123,6 +123,7 @@
           <table class="min-w-full text-sm">
             <thead>
               <tr class="text-left text-xs text-gray-500 border-b">
+                <th class="py-2">Actions</th>
                 <th class="py-2">Plan</th>
                 <th class="py-2">Amount</th>
                 <th class="py-2">Interval</th>
@@ -133,6 +134,19 @@
             <tbody>
               <%= for s <- @subscriptions do %>
                 <tr class="border-b text-gray-800">
+                  <td class="py-2">
+                    <%= if s.status == :active do %>
+                      <button
+                        phx-click="cancel_subscription"
+                        phx-value-id={s.id}
+                        class="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                      >
+                        Cancel
+                      </button>
+                    <% else %>
+                      -
+                    <% end %>
+                  </td>
                   <td class="py-2"><%= s.subscription_code || "N/A" %></td>
                   <td class="py-2">₦<%= s.amount %></td>
                   <td class="py-2"><%= s.interval %></td>

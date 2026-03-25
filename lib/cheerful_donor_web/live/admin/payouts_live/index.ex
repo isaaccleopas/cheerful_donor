@@ -61,7 +61,7 @@ defmodule CheerfulDonorWeb.Admin.PayoutsLive.Index do
 
         # 🚀 Background job
         Oban.insert!(
-          CheerfulDonor.Payouts.Workers.ProcessPayout.new(%{
+          ProcessPayout.new(%{
             "payout_id" => payout.id
           })
         )

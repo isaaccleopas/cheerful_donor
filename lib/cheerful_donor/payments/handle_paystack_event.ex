@@ -26,6 +26,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
       case payload["event"] do
         "charge.success" -> handle_charge_success(payload)
         "subscription.create" -> handle_subscription_create(payload)
+        "subscription.disable" -> handle_subscription_disabled(payload)
         "invoice.payment_succeeded" -> handle_subscription_payment(payload)
         "invoice.payment_failed" -> handle_payment_failed(payload)
         "transfer.success" -> handle_transfer_success(payload)
@@ -196,6 +197,7 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
                interval: interval,
                status: :active,
                subscription_code: sub_data["subscription_code"],
+               email_token: sub_data["email_token"],
                next_charge_at: next_charge_at
              }) do
         :ok
@@ -307,6 +309,20 @@ defmodule CheerfulDonor.Payments.HandlePaystackEvent do
 
       _ ->
         Logger.warning("Subscription not found for failure event")
+    end
+
+    :ok
+  end
+
+  defp handle_subscription_disabled(%{"data" => %{"subscription_code" => code}}) do
+    case Billing.get_subscription_by_code(code) do
+      {:ok, sub} ->
+        sub
+        |> Ash.Changeset.for_update(:update, %{status: :cancelled})
+        |> Ash.update(context: %{system: true})
+
+      _ ->
+        Logger.warning("Subscription not found for disable event")
     end
 
     :ok

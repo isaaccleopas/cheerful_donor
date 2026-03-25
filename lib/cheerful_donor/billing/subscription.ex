@@ -20,7 +20,8 @@ defmodule CheerfulDonor.Billing.Subscription do
       :church_id,
       :campaign_id,
       :payment_method_id,
-      :subscription_code
+      :subscription_code,
+      :email_token
     ],
     update: [
       :status,
@@ -58,6 +59,7 @@ defmodule CheerfulDonor.Billing.Subscription do
     end
     attribute :subscription_code, :string, public?: true
     attribute :next_charge_at, :utc_datetime, public?: true
+    attribute :email_token, :string, public?: true
     timestamps()
   end
 

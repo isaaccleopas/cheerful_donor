@@ -154,6 +154,18 @@ defmodule CheerfulDonor.Paystack.Client do
     request(:post, url, body)
   end
 
+  def disable_subscription(subscription_code, email_token) do
+    url = "#{@paystack_url}/subscription/disable"
+
+    body =
+      Jason.encode!(%{
+        code: subscription_code,
+        token: email_token
+      })
+
+    request(:post, url, body)
+  end
+
   @doc """
   Create a new customer on Paystack.
   Expects a map with :email, :first_name, :last_name, :phone keys.

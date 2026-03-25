@@ -126,4 +126,36 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
     {:noreply,
      put_flash(socket, :error, "A recurring payment failed — please check your payment method.")}
   end
+
+  @impl true
+  def handle_event("cancel_subscription", %{"id" => id}, socket) do
+    actor = socket.assigns.current_user
+
+    sub =
+      CheerfulDonor.Billing.Subscription
+      |> Ash.get!(id, actor: actor)
+
+    IO.inspect(sub.email_token, label: "EMAIL TOKEN")
+    IO.inspect(sub.subscription_code, label: "SUB CODE")
+    case CheerfulDonor.Billing.cancel_subscription(sub) do
+      {:ok, _} ->
+        {:noreply,
+        socket
+        |> put_flash(:info, "Subscription cancelled")
+        |> reload_subscriptions()}
+
+      {:error, _} ->
+        {:noreply,
+        put_flash(socket, :error, "Failed to cancel subscription")}
+    end
+  end
+
+  defp reload_subscriptions(socket) do
+    donor = socket.assigns.donor
+
+    subs =
+      CheerfulDonor.Billing.get_subscriptions_for_donor(donor.id)
+
+    assign(socket, :subscriptions, subs)
+  end
 end
