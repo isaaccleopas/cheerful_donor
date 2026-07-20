@@ -1,6 +1,7 @@
 defmodule CheerfulDonorWeb.PaystackWebhookController do
   use CheerfulDonorWeb, :controller
 
+  require Logger
   require Ash.Query
 
   def handle(conn, _params) do
@@ -18,9 +19,11 @@ defmodule CheerfulDonorWeb.PaystackWebhookController do
       |> Base.encode16(case: :lower)
 
     if received_sig != expected_sig do
+      Logger.warning("Paystack webhook rejected: invalid signature")
       send_resp(conn, 401, "invalid signature")
     else
       payload = Jason.decode!(raw_body)
+      Logger.info("Paystack webhook received: #{payload["event"]}")
 
       Task.start(fn ->
         if already_processed?(payload) do
@@ -38,6 +41,14 @@ defmodule CheerfulDonorWeb.PaystackWebhookController do
 
       send_resp(conn, 200, "ok")
     end
+  rescue
+    error ->
+      Logger.error("Paystack webhook failed: #{Exception.message(error)}")
+      send_resp(conn, 500, "error")
+  end
+
+  def ping(conn, _params) do
+    send_resp(conn, 200, "Paystack webhook endpoint is reachable")
   end
 
   defp already_processed?(payload) do

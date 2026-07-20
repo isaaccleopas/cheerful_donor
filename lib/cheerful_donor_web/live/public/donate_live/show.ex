@@ -16,6 +16,8 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
       |> Ash.Query.load(:church)
       |> Ash.read_one!()
 
+    stats = Giving.campaign_stats(campaign.id)
+
     user = socket.assigns[:current_user]
     user_id = user && user.id
 
@@ -33,6 +35,7 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
      socket
      |> assign(:page_title, campaign.title)
      |> assign(:campaign, campaign)
+     |> assign(:stats, stats)
      |> assign(:user_id, user_id)
      |> assign(:donor, donor)
      |> assign(:amount, nil)
@@ -52,6 +55,11 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
   end
 
   @impl true
+  def handle_event("pick_amount", %{"amount" => amount}, socket) do
+    {:noreply, assign(socket, :amount, amount)}
+  end
+
+  @impl true
   def handle_event("start_payment", _, %{assigns: assigns} = socket) do
     amount = assigns.amount
     donor = assigns.donor
@@ -61,13 +69,13 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
 
     cond do
       is_nil(amount) or amount == "" ->
-        {:noreply, put_flash(socket, :error, "Please enter an amount")}
+        {:noreply, put_flash(socket, :error, "Please choose or enter an amount")}
 
       is_nil(donor) and (is_nil(guest_email) or guest_email == "") ->
         {:noreply, put_flash(socket, :error, "Email is required")}
 
       true ->
-        with {int_amount, _} <- Integer.parse(amount) do
+        with {int_amount, _} <- Integer.parse(to_string(amount)) do
           attrs =
             %{
               amount: int_amount,

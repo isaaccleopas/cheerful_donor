@@ -14,7 +14,12 @@ config :cheerful_donor, Oban,
   notifier: Oban.Notifiers.Postgres,
   queues: [default: 10],
   repo: CheerfulDonor.Repo,
-  plugins: [{Oban.Plugins.Cron, []}]
+  plugins: [
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"*/10 * * * *", CheerfulDonor.Giving.Workers.VerifyPendingDonations}
+     ]}
+  ]
 
 config :ash,
   allow_forbidden_field_for_relationships_by_default?: true,

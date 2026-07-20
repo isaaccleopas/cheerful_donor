@@ -1,6 +1,6 @@
 <Layouts.admin flash={@flash} current_user={@current_user}>
-  <div class="mx-auto max-w-xl">
-    <h1 class="font-display mb-6 text-2xl font-semibold text-primary">
+  <div class="cd-form-panel mx-auto max-w-xl">
+    <h1 class="cd-page-title mb-6 border-b-2 border-base-300 pb-3 text-2xl">
       {if(@live_action == :edit, do: "Edit campaign", else: "New campaign")}
     </h1>
 
@@ -9,10 +9,10 @@
       id="campaign-form"
       phx-change="validate"
       phx-submit="save"
-      class="space-y-4"
+      class="cd-form"
     >
       <.input field={@form[:id]} type="hidden" />
-      <.input field={@form[:title]} label="Title" required class="min-h-11" />
+      <.input field={@form[:title]} label="Title" required />
       <.input field={@form[:description]} label="Description" type="textarea" />
       <.input
         field={@form[:type]}
@@ -23,18 +23,20 @@
           {"Offering", :offering},
           {"Tithe", :tithe}
         ]}
-        class="min-h-11"
       />
-      <.input
-        field={@form[:goal_amount]}
-        label="Goal amount (optional)"
-        type="number"
-        class="min-h-11"
-      />
+      <.input field={@form[:goal_amount]} label="Goal amount (optional)" type="number" />
       <.input field={@form[:is_active]} type="checkbox" label="Active?" />
-      <.button class="cd-cta min-h-12 w-full rounded-lg bg-primary font-semibold text-primary-content hover:brightness-110">
-        Save
-      </.button>
+      <div class="cd-form-actions">
+        <.link
+          navigate={~p"/admin/campaigns"}
+          class="inline-flex min-h-11 items-center text-sm font-bold hover:underline"
+        >
+          Cancel
+        </.link>
+        <.button class="cd-cta min-h-12 rounded-lg bg-primary px-6 font-semibold text-primary-content hover:brightness-110">
+          Save campaign
+        </.button>
+      </div>
     </.form>
   </div>
 </Layouts.admin>

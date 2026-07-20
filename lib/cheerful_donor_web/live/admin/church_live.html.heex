@@ -1,37 +1,55 @@
 <Layouts.admin flash={@flash} current_user={@current_user}>
-  <div class="mx-auto max-w-xl">
-    <h1 class="font-display mb-6 text-2xl font-semibold text-primary">Create church</h1>
+  <div class="cd-form-panel mx-auto max-w-xl">
+    <h1 class="cd-page-title mb-6 border-b-2 border-base-300 pb-3 text-2xl">Create church</h1>
 
-    <form id="church-form" phx-submit="save" class="space-y-4">
-      <input
-        name="church[name]"
-        placeholder="Church name"
-        required
-        class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-      />
-      <input
-        name="church[email]"
-        type="email"
-        placeholder="Email"
-        class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-      />
-      <input
-        name="church[phone]"
-        placeholder="Phone"
-        class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-      />
-      <input
-        name="church[address]"
-        placeholder="Address"
-        class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-      />
+    <form id="church-form" phx-submit="save" class="cd-form">
+      <div>
+        <label for="church_name" class="cd-field-label">Church name</label>
+        <input
+          id="church_name"
+          name="church[name]"
+          placeholder="Church name"
+          required
+          class="cd-field"
+        />
+      </div>
+      <div>
+        <label for="church_email" class="cd-field-label">Email</label>
+        <input
+          id="church_email"
+          name="church[email]"
+          type="email"
+          placeholder="church@example.com"
+          class="cd-field"
+        />
+      </div>
+      <div>
+        <label for="church_phone" class="cd-field-label">Phone</label>
+        <input
+          id="church_phone"
+          name="church[phone]"
+          placeholder="Phone"
+          class="cd-field"
+        />
+      </div>
+      <div>
+        <label for="church_address" class="cd-field-label">Address</label>
+        <input
+          id="church_address"
+          name="church[address]"
+          placeholder="Address"
+          class="cd-field"
+        />
+      </div>
 
-      <button
-        type="submit"
-        class="cd-cta w-full min-h-12 rounded-lg bg-primary font-semibold text-primary-content hover:brightness-110"
-      >
-        Create church
-      </button>
+      <div class="cd-form-actions">
+        <button
+          type="submit"
+          class="cd-cta w-full min-h-12 rounded-lg bg-primary font-semibold text-primary-content hover:brightness-110"
+        >
+          Create church
+        </button>
+      </div>
     </form>
   </div>
 </Layouts.admin>

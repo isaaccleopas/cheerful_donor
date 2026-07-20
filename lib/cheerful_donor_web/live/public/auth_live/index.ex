@@ -50,28 +50,28 @@ defmodule CheerfulDonorWeb.Public.AuthLive.Index do
     ~H"""
     <Layouts.marketing flash={@flash} current_user={@current_user}>
       <div class="mx-auto max-w-md px-4 py-14 sm:px-6">
-        <h1 class="font-display text-center text-3xl font-semibold tracking-tight text-primary">
-          {@cta}
-        </h1>
-        <p class="mt-2 text-center text-sm text-base-content/65">
-          <.link
-            navigate={@alternative_path}
-            class="cd-nav-link font-medium text-primary hover:underline"
-          >
-            {@alternative}
-          </.link>
-        </p>
-
-        <div class="mt-10">
-          <.live_component
-            module={CheerfulDonorWeb.Public.AuthLive.AuthForm}
-            id={@form_id}
-            form={@form}
-            is_register?={@live_action == :register}
-            action={@action}
-            cta={@cta}
-          />
+        <div class="mb-8 border-b-2 border-base-300 pb-5 text-center">
+          <h1 class="cd-page-title text-3xl">
+            {@cta}
+          </h1>
+          <p class="cd-muted mt-2 text-sm font-semibold">
+            <.link
+              navigate={@alternative_path}
+              class="cd-nav-link font-bold text-primary hover:underline"
+            >
+              {@alternative}
+            </.link>
+          </p>
         </div>
+
+        <.live_component
+          module={CheerfulDonorWeb.Public.AuthLive.AuthForm}
+          id={@form_id}
+          form={@form}
+          is_register?={@live_action == :register}
+          action={@action}
+          cta={@cta}
+        />
       </div>
     </Layouts.marketing>
     """

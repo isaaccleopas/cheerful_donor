@@ -1,15 +1,11 @@
 defmodule CheerfulDonorWeb.Public.CampaignLive.Index do
   use CheerfulDonorWeb, :live_view
 
-  alias CheerfulDonor.Giving.Campaign
+  alias CheerfulDonor.Giving
 
   @impl true
   def mount(_params, _session, socket) do
-    campaigns =
-      Campaign
-      |> Ash.Query.for_read(:list_active)
-      |> Ash.Query.load(:church)
-      |> Ash.read!()
+    campaigns = Giving.list_active_campaigns_with_stats()
 
     {:ok,
      socket

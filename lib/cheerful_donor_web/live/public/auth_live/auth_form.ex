@@ -26,7 +26,7 @@ defmodule CheerfulDonorWeb.Public.AuthLive.AuthForm do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="cd-form-panel">
       <.form
         for={@form}
         as={:user}
@@ -37,15 +37,14 @@ defmodule CheerfulDonorWeb.Public.AuthLive.AuthForm do
         phx-target={@myself}
         action={@action}
         method="POST"
-        class="space-y-4"
+        class="cd-form"
       >
-        <.input field={@form[:email]} type="email" label="Email" class="min-h-11" />
+        <.input field={@form[:email]} type="email" label="Email" />
         <.input
           field={@form[:password]}
           type="password"
           label="Password"
           value={Phoenix.HTML.Form.input_value(@form, :password)}
-          class="min-h-11"
         />
         <%= if @is_register? do %>
           <.input
@@ -53,27 +52,26 @@ defmodule CheerfulDonorWeb.Public.AuthLive.AuthForm do
             type="password"
             label="Confirm password"
             value={Phoenix.HTML.Form.input_value(@form, :password_confirmation)}
-            class="min-h-11"
           />
-          <fieldset class="space-y-2">
-            <legend class="text-sm font-semibold text-base-content">Register as</legend>
+          <fieldset class="space-y-3 rounded-xl border-2 border-base-300 p-4">
+            <legend class="cd-field-label px-1">Register as</legend>
             <div class="flex flex-wrap gap-4">
-              <label class="flex min-h-11 items-center gap-2 text-sm">
+              <label class="flex min-h-11 items-center gap-2 text-sm font-semibold">
                 <input
                   type="radio"
                   name={@form[:role].name}
                   value="donor"
                   checked={Phoenix.HTML.Form.input_value(@form, :role) in [:donor, "donor", nil]}
-                  class="radio radio-primary"
+                  class="radio radio-primary border-2"
                 /> Donor
               </label>
-              <label class="flex min-h-11 items-center gap-2 text-sm">
+              <label class="flex min-h-11 items-center gap-2 text-sm font-semibold">
                 <input
                   type="radio"
                   name={@form[:role].name}
                   value="admin"
                   checked={Phoenix.HTML.Form.input_value(@form, :role) in [:admin, "admin"]}
-                  class="radio radio-primary"
+                  class="radio radio-primary border-2"
                 /> Church admin
               </label>
             </div>

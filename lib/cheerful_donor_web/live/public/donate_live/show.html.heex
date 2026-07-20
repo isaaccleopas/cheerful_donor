@@ -1,83 +1,122 @@
 <Layouts.marketing flash={@flash} current_user={@current_user}>
-  <div class="mx-auto max-w-lg px-4 py-12 sm:px-6 lg:py-16">
-    <header class="mb-8">
-      <p class="text-sm font-medium uppercase tracking-wide text-primary/80">
-        {@campaign.church && @campaign.church.name}
-      </p>
-      <h1 class="font-display mt-2 text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
-        {@campaign.title}
-      </h1>
-      <p class="mt-3 text-base leading-relaxed text-base-content/70">
-        {@campaign.description}
-      </p>
-    </header>
+  <div class="bg-base-200/40">
+    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12 lg:px-8">
+      <.link navigate={~p"/campaigns"} class="text-sm font-bold text-primary hover:underline">
+        ← All campaigns
+      </.link>
 
-    <div class="border-t border-base-300 pt-8">
-      <h2 class="font-display text-xl font-semibold text-base-content">Make a donation</h2>
-      <p class="mt-1 text-sm text-base-content/60">
-        Amounts in NGN. You’ll complete payment securely with Paystack.
-      </p>
+      <div class="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-5 lg:gap-12">
+        <div class="lg:col-span-3">
+          <p class="cd-label text-primary">
+            {@campaign.church && @campaign.church.name}
+          </p>
+          <h1 class="font-display mt-2 text-3xl font-bold leading-tight tracking-tight text-base-content sm:text-4xl lg:text-5xl">
+            {@campaign.title}
+          </h1>
 
-      <form
-        id="public-donate-form"
-        phx-submit="start_payment"
-        phx-change="update_form"
-        class="mt-6 space-y-4"
-      >
-        <%= unless @donor do %>
-          <div>
-            <label for="guest_name" class="mb-1.5 block text-sm font-medium text-base-content/80">
-              Your name
-            </label>
-            <input
-              id="guest_name"
-              type="text"
-              name="guest_name"
-              value={@guest_name}
-              placeholder="Full name"
-              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+          <div class="cd-panel mt-6 p-6">
+            <.campaign_progress
+              raised={@stats.raised}
+              goal={@campaign.goal_amount}
+              donor_count={@stats.donor_count}
             />
           </div>
 
-          <div>
-            <label for="guest_email" class="mb-1.5 block text-sm font-medium text-base-content/80">
-              Email
-            </label>
-            <input
-              id="guest_email"
-              type="email"
-              name="guest_email"
-              value={@guest_email}
-              placeholder="you@example.com"
-              required
-              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+          <div class="mt-8 border-t-2 border-base-300 pt-6">
+            <h2 class="cd-section-title">About this fundraiser</h2>
+            <p class="cd-muted mt-3 text-base font-medium leading-relaxed">
+              {@campaign.description ||
+                "Help support this important cause. Every gift brings us closer to the goal."}
+            </p>
           </div>
-        <% end %>
 
-        <div>
-          <label for="amount" class="mb-1.5 block text-sm font-medium text-base-content/80">
-            Amount (₦)
-          </label>
-          <input
-            id="amount"
-            type="number"
-            name="amount"
-            value={@amount}
-            placeholder="5000"
-            min="100"
-            required
-            class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
+          <div class="cd-panel mt-8 p-5">
+            <p class="cd-label">Organizer</p>
+            <p class="mt-1 font-semibold text-base-content">
+              {@campaign.church && @campaign.church.name}
+            </p>
+          </div>
+
+          <div class="mt-8 lg:hidden">
+            <.trust_strip />
+          </div>
         </div>
 
-        <button
-          type="submit"
-          class="cd-cta w-full min-h-12 rounded-lg bg-primary text-base font-semibold text-primary-content hover:brightness-110"
-        >
-          Donate now
-        </button>
-      </form>
+        <div class="lg:col-span-2">
+          <div class="lg:sticky lg:top-24">
+            <div class="cd-form-panel shadow-lg">
+              <h2 class="cd-section-title border-b-2 border-base-300 pb-3">
+                Enter your donation
+              </h2>
+              <p class="cd-muted mt-2 text-sm font-semibold">Secure checkout powered by Paystack</p>
+
+              <form
+                id="public-donate-form"
+                phx-submit="start_payment"
+                phx-change="update_form"
+                class="cd-form mt-6"
+              >
+                <%= unless @donor do %>
+                  <div>
+                    <label for="guest_name" class="cd-field-label">Your name</label>
+                    <input
+                      id="guest_name"
+                      type="text"
+                      name="guest_name"
+                      value={@guest_name}
+                      placeholder="Full name"
+                      class="cd-field"
+                    />
+                  </div>
+
+                  <div>
+                    <label for="guest_email" class="cd-field-label">Email</label>
+                    <input
+                      id="guest_email"
+                      type="email"
+                      name="guest_email"
+                      value={@guest_email}
+                      placeholder="you@example.com"
+                      required
+                      class="cd-field"
+                    />
+                  </div>
+                <% end %>
+
+                <div>
+                  <label class="cd-field-label">Quick amounts</label>
+                  <.amount_picker selected={@amount} />
+                </div>
+
+                <div>
+                  <label for="amount" class="cd-field-label">Or enter amount (₦)</label>
+                  <input
+                    id="amount"
+                    type="number"
+                    name="amount"
+                    value={@amount}
+                    placeholder="5000"
+                    min="100"
+                    required
+                    class="cd-field"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  class="cd-cta w-full min-h-12 rounded-xl bg-primary text-base font-semibold text-primary-content shadow-md hover:brightness-110"
+                >
+                  Donate now
+                </button>
+              </form>
+
+              <div class="mt-6 hidden border-t-2 border-base-300 pt-4 lg:block">
+                <.trust_strip />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </Layouts.marketing>
