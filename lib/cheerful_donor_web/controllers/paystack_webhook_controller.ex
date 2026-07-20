@@ -42,8 +42,8 @@ defmodule CheerfulDonorWeb.PaystackWebhookController do
 
   defp already_processed?(payload) do
     case CheerfulDonor.Paystack.WebhookEvent
-        |> Ash.Query.filter(payload == ^payload)
-        |> Ash.read_one() do
+         |> Ash.Query.filter(payload == ^payload)
+         |> Ash.read_one() do
       {:ok, %{processed: true}} -> true
       _ -> false
     end

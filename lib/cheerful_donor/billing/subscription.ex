@@ -10,24 +10,26 @@ defmodule CheerfulDonor.Billing.Subscription do
   end
 
   actions do
-    defaults [:read, :destroy,
-    create: [
-      :amount,
-      :interval,
-      :status,
-      :next_charge_at,
-      :donor_id,
-      :church_id,
-      :campaign_id,
-      :payment_method_id,
-      :subscription_code,
-      :email_token
-    ],
-    update: [
-      :status,
-      :next_charge_at
+    defaults [
+      :read,
+      :destroy,
+      create: [
+        :amount,
+        :interval,
+        :status,
+        :next_charge_at,
+        :donor_id,
+        :church_id,
+        :campaign_id,
+        :payment_method_id,
+        :subscription_code,
+        :email_token
+      ],
+      update: [
+        :status,
+        :next_charge_at
+      ]
     ]
-  ]
 
     read :for_donor do
       argument :donor_id, :uuid, allow_nil?: false
@@ -57,6 +59,7 @@ defmodule CheerfulDonor.Billing.Subscription do
       default :pending
       constraints one_of: CheerfulDonor.Enums.subscription_statuses()
     end
+
     attribute :subscription_code, :string, public?: true
     attribute :next_charge_at, :utc_datetime, public?: true
     attribute :email_token, :string, public?: true
@@ -71,5 +74,4 @@ defmodule CheerfulDonor.Billing.Subscription do
 
     has_many :transactions, CheerfulDonor.Payments.Transaction
   end
-
 end

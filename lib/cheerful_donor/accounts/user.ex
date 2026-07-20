@@ -109,7 +109,6 @@ defmodule CheerfulDonor.Accounts.User do
     end
 
     read :sign_in_with_token do
-
       description "Attempt to sign in using a short-lived sign in token."
       get? true
 
@@ -264,17 +263,17 @@ defmodule CheerfulDonor.Accounts.User do
     attribute :confirmed_at, :utc_datetime_usec
   end
 
-  identities do
-    identity :unique_email, [:email]
-  end
-
   relationships do
     has_one :donor, CheerfulDonor.Accounts.Donor do
       allow_nil? true
     end
+
     has_one :church, CheerfulDonor.Accounts.Church do
       allow_nil? true
     end
   end
 
+  identities do
+    identity :unique_email, [:email]
+  end
 end

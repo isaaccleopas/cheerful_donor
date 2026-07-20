@@ -17,10 +17,11 @@ defmodule CheerfulDonorWeb.Public.AuthLive.Index do
 
   defp apply_action(socket, :register, _params) do
     socket
+    |> assign(:page_title, "Create account")
     |> assign(:form_id, "sign-up-form")
-    |> assign(:cta, "Sign up")
+    |> assign(:cta, "Create account")
     |> assign(:alternative_path, ~p"/sign-in")
-    |> assign(:alternative, "Have an account?")
+    |> assign(:alternative, "Already have an account? Sign in")
     |> assign(:action, ~p"/auth/user/password/register")
     |> assign(
       :form,
@@ -31,10 +32,11 @@ defmodule CheerfulDonorWeb.Public.AuthLive.Index do
 
   defp apply_action(socket, :sign_in, _params) do
     socket
+    |> assign(:page_title, "Sign in")
     |> assign(:form_id, "sign-in-form")
     |> assign(:cta, "Sign in")
     |> assign(:alternative_path, ~p"/register")
-    |> assign(:alternative, "Need an account?")
+    |> assign(:alternative, "Need an account? Register")
     |> assign(:action, ~p"/auth/user/password/sign_in")
     |> assign(
       :form,
@@ -46,27 +48,32 @@ defmodule CheerfulDonorWeb.Public.AuthLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="auth-page">
-      <div class="container page">
-        <div class="row">
-          <div class="col-md-6 offset-md-3 col-xs-12">
-            <h1 class="text-xs-center"><%= @cta %></h1>
-            <p class="text-xs-center">
-              <a href={@alternative_path}><%= @alternative %></a>
-            </p>
+    <Layouts.marketing flash={@flash} current_user={@current_user}>
+      <div class="mx-auto max-w-md px-4 py-14 sm:px-6">
+        <h1 class="font-display text-center text-3xl font-semibold tracking-tight text-primary">
+          {@cta}
+        </h1>
+        <p class="mt-2 text-center text-sm text-base-content/65">
+          <.link
+            navigate={@alternative_path}
+            class="cd-nav-link font-medium text-primary hover:underline"
+          >
+            {@alternative}
+          </.link>
+        </p>
 
-            <.live_component
-              module={CheerfulDonorWeb.Public.AuthLive.AuthForm}
-              id={@form_id}
-              form={@form}
-              is_register?={@live_action == :register}
-              action={@action}
-              cta={@cta}
-            />
-          </div>
+        <div class="mt-10">
+          <.live_component
+            module={CheerfulDonorWeb.Public.AuthLive.AuthForm}
+            id={@form_id}
+            form={@form}
+            is_register?={@live_action == :register}
+            action={@action}
+            cta={@cta}
+          />
         </div>
       </div>
-    </div>
+    </Layouts.marketing>
     """
   end
 end

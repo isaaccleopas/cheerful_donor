@@ -33,7 +33,6 @@ defmodule CheerfulDonorWeb.Router do
       on_mount: [
         {CheerfulDonorWeb.LiveUserAuth, :current_user}
       ] do
-
       live "/", HomeLive, :index
       live "/campaigns", CampaignLive.Index, :index
       live "/donate/:slug", DonateLive.Show
@@ -51,15 +50,10 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
         {CheerfulDonorWeb.DonorLiveAuth, :default}
       ] do
-
       live "/campaigns", CampaignLive.Index, :index
       live "/donate/:slug", DonateLive.Show
 
       live "/dashboard", DashboardLive, :index
-      live "/donations", DonationsLive, :index
-      live "/subscriptions", SubscriptionsLive, :index
-      live "/transactions", TransactionsLive, :index
-      live "/payment-methods", PaymentMethodsLive, :index
     end
   end
 
@@ -72,11 +66,9 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
         {CheerfulDonorWeb.AdminLiveAuth, :default}
       ] do
-
       live "/dashboard", DashboardLive, :index
 
       live "/church/new", ChurchLive, :new
-      live "/church/edit", ChurchLive.Edit
 
       live "/payouts/bank-accounts", BankAccountLive.Index, :index
       live "/payouts/bank-accounts/new", BankAccountLive.Index, :new

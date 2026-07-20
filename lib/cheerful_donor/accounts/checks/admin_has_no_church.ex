@@ -1,6 +1,7 @@
 defmodule CheerfulDonor.Accounts.Checks.AdminHasNoChurch do
   use Ash.Policy.SimpleCheck
 
+  require Ash.Query
   alias CheerfulDonor.Accounts.Church
 
   @impl true
@@ -8,8 +9,11 @@ defmodule CheerfulDonor.Accounts.Checks.AdminHasNoChurch do
 
   @impl true
   def match?(_actor, _record, %{actor: actor}) do
-    case Church.by_user_id(actor.id) do
-      {:ok, []} -> true
+    case Church
+         |> Ash.Query.filter(user_id == ^actor.id)
+         |> Ash.read_one(authorize?: false) do
+      {:ok, nil} -> true
+      {:ok, _} -> false
       _ -> false
     end
   end

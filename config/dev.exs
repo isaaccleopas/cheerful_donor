@@ -91,3 +91,11 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :cheerful_donor, CheerfulDonor.EventStore,
+  serializer: CheerfulDonor.EventSerializer,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "cheerful_donor_eventstore_dev",
+  pool_size: 10

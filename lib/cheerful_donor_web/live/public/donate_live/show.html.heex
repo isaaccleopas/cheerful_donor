@@ -1,41 +1,83 @@
-<div class="border-t pt-6">
-  <h2 class="text-xl font-semibold mb-4 text-gray-500">Make a Donation</h2>
+<Layouts.marketing flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-lg px-4 py-12 sm:px-6 lg:py-16">
+    <header class="mb-8">
+      <p class="text-sm font-medium uppercase tracking-wide text-primary/80">
+        {@campaign.church && @campaign.church.name}
+      </p>
+      <h1 class="font-display mt-2 text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+        {@campaign.title}
+      </h1>
+      <p class="mt-3 text-base leading-relaxed text-base-content/70">
+        {@campaign.description}
+      </p>
+    </header>
 
-  <form phx-submit="start_payment" phx-change="update_form">
+    <div class="border-t border-base-300 pt-8">
+      <h2 class="font-display text-xl font-semibold text-base-content">Make a donation</h2>
+      <p class="mt-1 text-sm text-base-content/60">
+        Amounts in NGN. You’ll complete payment securely with Paystack.
+      </p>
 
-    <%= unless @donor do %>
-      <input
-        type="text"
-        name="guest_name"
-        value={@guest_name}
-        placeholder="Your Name"
-        class="w-full mb-3 px-4 py-3 border rounded-lg text-gray-500"
-      />
+      <form
+        id="public-donate-form"
+        phx-submit="start_payment"
+        phx-change="update_form"
+        class="mt-6 space-y-4"
+      >
+        <%= unless @donor do %>
+          <div>
+            <label for="guest_name" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Your name
+            </label>
+            <input
+              id="guest_name"
+              type="text"
+              name="guest_name"
+              value={@guest_name}
+              placeholder="Full name"
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
 
-      <input
-        type="email"
-        name="guest_email"
-        value={@guest_email}
-        placeholder="Your Email"
-        required
-        class="w-full mb-3 px-4 py-3 border rounded-lg text-gray-500"
-      />
-    <% end %>
+          <div>
+            <label for="guest_email" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Email
+            </label>
+            <input
+              id="guest_email"
+              type="email"
+              name="guest_email"
+              value={@guest_email}
+              placeholder="you@example.com"
+              required
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+        <% end %>
 
-    <input
-      type="number"
-      name="amount"
-      value={@amount}
-      placeholder="Enter amount"
-      required
-      class="w-full px-4 py-3 border rounded-lg text-gray-500"
-    />
+        <div>
+          <label for="amount" class="mb-1.5 block text-sm font-medium text-base-content/80">
+            Amount (₦)
+          </label>
+          <input
+            id="amount"
+            type="number"
+            name="amount"
+            value={@amount}
+            placeholder="5000"
+            min="100"
+            required
+            class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
 
-    <button
-      type="submit"
-      class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg"
-    >
-      Donate Now
-    </button>
-  </form>
-</div>
+        <button
+          type="submit"
+          class="cd-cta w-full min-h-12 rounded-lg bg-primary text-base font-semibold text-primary-content hover:brightness-110"
+        >
+          Donate now
+        </button>
+      </form>
+    </div>
+  </div>
+</Layouts.marketing>

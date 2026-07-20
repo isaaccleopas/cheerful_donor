@@ -16,10 +16,10 @@ defmodule CheerfulDonor.Payouts.Workers.ProcessPayout do
     reference = payout.reference
 
     case Client.initiate_transfer(
-          payout.bank_account.recipient_code,
-          payout.amount,
-          reference
-        ) do
+           payout.bank_account.recipient_code,
+           payout.amount,
+           reference
+         ) do
       {:ok, %{"data" => data}} ->
         Ash.update(payout, %{
           status: :processing,

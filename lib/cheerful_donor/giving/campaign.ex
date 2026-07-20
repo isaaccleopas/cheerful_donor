@@ -39,6 +39,20 @@ defmodule CheerfulDonor.Giving.Campaign do
     end
   end
 
+  policies do
+    policy action_type(:create) do
+      authorize_if expr(^actor(:role) == :admin)
+    end
+
+    policy action_type([:update, :destroy]) do
+      authorize_if expr(^actor(:role) == :admin)
+    end
+
+    policy action_type(:read) do
+      authorize_if always()
+    end
+  end
+
   attributes do
     uuid_primary_key :id
 
@@ -76,10 +90,6 @@ defmodule CheerfulDonor.Giving.Campaign do
     timestamps()
   end
 
-  identities do
-    identity :unique_slug, [:slug]
-  end
-
   relationships do
     belongs_to :church, CheerfulDonor.Accounts.Church
 
@@ -87,18 +97,7 @@ defmodule CheerfulDonor.Giving.Campaign do
     has_many :donation_intents, CheerfulDonor.Giving.DonationIntent
   end
 
-  policies do
-    policy action_type(:create) do
-      authorize_if expr(^actor(:role) == :admin)
-    end
-
-    policy action_type([:update, :destroy]) do
-      authorize_if expr(^actor(:role) == :admin)
-    end
-
-    policy action_type(:read) do
-      authorize_if always()
-    end
+  identities do
+    identity :unique_slug, [:slug]
   end
-
 end

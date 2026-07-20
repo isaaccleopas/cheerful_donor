@@ -11,10 +11,23 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   end
 
   actions do
-    defaults [:read, :destroy,
-  ]
+    defaults [:read, :destroy]
+
     create :create do
-      accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :interval, :type, :meta, :donor_id, :campaign_id, :church_id]
+      accept [
+        :guest_email,
+        :guest_name,
+        :reference,
+        :amount,
+        :currency,
+        :status,
+        :interval,
+        :type,
+        :meta,
+        :donor_id,
+        :campaign_id,
+        :church_id
+      ]
     end
 
     update :mark_successful do
@@ -29,11 +42,35 @@ defmodule CheerfulDonor.Giving.DonationIntent do
     end
   end
 
+  policies do
+    policy action(:create) do
+      authorize_if always()
+    end
+
+    policy action(:read_by_reference) do
+      authorize_if always()
+    end
+
+    policy action_type(:read) do
+      # For now, allow all reads
+      authorize_if always()
+    end
+
+    policy action_type([:create, :update, :destroy]) do
+      authorize_if always()
+    end
+
+    policy action_type(:update) do
+      authorize_if context_equals(:system, true)
+    end
+  end
+
   attributes do
     uuid_primary_key :id
 
     attribute :guest_email, :string, public?: true
     attribute :guest_name, :string, public?: true
+
     attribute :reference, :string do
       allow_nil? false
       public? true
@@ -68,6 +105,7 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       default :one_time
       constraints one_of: [:one_time, :recurring]
     end
+
     attribute :meta, :map, public?: true
     timestamps()
   end
@@ -77,37 +115,18 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       attribute_writable? true
       allow_nil? true
     end
+
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
 
     belongs_to :payment_method, CheerfulDonor.Billing.PaymentMethod, allow_nil?: true
 
     has_one :donation, CheerfulDonor.Giving.Donation do
-      source_attribute :id                 # primary key in DonationIntent
-      destination_attribute :donation_intent_id  # foreign key in Donation
-    end
-  end
+      # primary key in DonationIntent
+      source_attribute :id
 
-  policies do
-    policy action(:create) do
-      authorize_if always()
-    end
-
-    policy action(:read_by_reference) do
-      authorize_if always()
-    end
-
-    policy action_type(:read) do
-      # For now, allow all reads
-      authorize_if always()
-    end
-
-    policy action_type([:create, :update, :destroy]) do
-      authorize_if always()
-    end
-
-    policy action_type(:update) do
-      authorize_if context_equals(:system, true)
+      # foreign key in Donation
+      destination_attribute :donation_intent_id
     end
   end
 end

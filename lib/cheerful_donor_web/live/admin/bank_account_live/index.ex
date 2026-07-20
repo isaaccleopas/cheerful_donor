@@ -86,14 +86,14 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
         )
       else
         with {:ok, response} <- Client.create_transfer_recipient(params),
-            recipient_code when is_binary(recipient_code) <-
-              get_in(response, ["data", "recipient_code"]),
-            {:ok, account} <-
-              AshPhoenix.Form.submit(
-                socket.assigns.ash_form,
-                params: Map.put(params, "recipient_code", recipient_code),
-                actor: actor
-              ) do
+             recipient_code when is_binary(recipient_code) <-
+               get_in(response, ["data", "recipient_code"]),
+             {:ok, account} <-
+               AshPhoenix.Form.submit(
+                 socket.assigns.ash_form,
+                 params: Map.put(params, "recipient_code", recipient_code),
+                 actor: actor
+               ) do
           {:ok, account}
         else
           {:error, %AshPhoenix.Form{} = form} ->
@@ -112,38 +112,38 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
           |> Ash.read!(actor: actor)
 
         {:noreply,
-        socket
-        |> put_flash(:info, "Bank account saved")
-        |> assign(:bank_accounts, bank_accounts)
-        |> push_patch(to: ~p"/admin/payouts/bank-accounts")}
+         socket
+         |> put_flash(:info, "Bank account saved")
+         |> assign(:bank_accounts, bank_accounts)
+         |> push_patch(to: ~p"/admin/payouts/bank-accounts")}
 
       {:error, %AshPhoenix.Form{} = form} ->
         # update case (edit flow)
         {:noreply,
-        socket
-        |> assign(:ash_form, form)
-        |> assign(:form, Phoenix.Component.to_form(form, as: "bank_account"))}
+         socket
+         |> assign(:ash_form, form)
+         |> assign(:form, Phoenix.Component.to_form(form, as: "bank_account"))}
 
       {:form_error, form} ->
         # create flow validation errors
         {:noreply,
-        socket
-        |> assign(:ash_form, form)
-        |> assign(:form, Phoenix.Component.to_form(form, as: "bank_account"))}
+         socket
+         |> assign(:ash_form, form)
+         |> assign(:form, Phoenix.Component.to_form(form, as: "bank_account"))}
 
       {:external_error, error} ->
         IO.inspect(error, label: "PAYSTACK / SAVE ERROR")
 
         {:noreply,
-        socket
-        |> put_flash(:error, "Failed to create bank account (payment provider error)")}
+         socket
+         |> put_flash(:error, "Failed to create bank account (payment provider error)")}
 
       {:error, error} ->
         IO.inspect(error, label: "UNKNOWN SAVE ERROR")
 
         {:noreply,
-        socket
-        |> put_flash(:error, "Failed to save bank account")}
+         socket
+         |> put_flash(:error, "Failed to save bank account")}
     end
   end
 
@@ -165,8 +165,7 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       {:error, error} ->
         IO.inspect(error, label: "DELETE ERROR")
 
-        {:noreply,
-        put_flash(socket, :error, "Unable to delete bank account")}
+        {:noreply, put_flash(socket, :error, "Unable to delete bank account")}
     end
   end
 
@@ -177,8 +176,8 @@ defmodule CheerfulDonorWeb.Admin.BankAccountLive.Index do
       |> Ash.read!(actor: actor)
 
     {:noreply,
-    socket
-    |> put_flash(:info, "Bank account deleted")
-    |> assign(:bank_accounts, bank_accounts)}
+     socket
+     |> put_flash(:info, "Bank account deleted")
+     |> assign(:bank_accounts, bank_accounts)}
   end
 end

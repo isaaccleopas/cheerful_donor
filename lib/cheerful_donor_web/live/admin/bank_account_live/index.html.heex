@@ -1,80 +1,70 @@
-<%= if @live_action == :index do %>
-
-<div class="mb-8">
-  <h2 class="text-lg font-semibold mb-4">Bank Accounts</h2>
-
-  <div class="space-y-3">
-    <%= for account <- @bank_accounts do %>
-      <div class="flex items-center justify-between border p-4 rounded">
-        <div>
-          <div class="font-medium"><%= account.bank_name %></div>
-          <div class="text-sm text-gray-500">
-            <%= account.account_name %> • <%= account.account_number %>
-          </div>
-        </div>
-
-        <div class="flex gap-2">
-          <.link
-            navigate={~p"/admin/payouts/bank-accounts/#{account.id}/edit"}
-            class="text-blue-600"
-          >
-            Edit
-          </.link>
-
-          <button
-            phx-click="delete"
-            phx-value-id={account.id}
-            data-confirm="Are you sure?"
-            class="text-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    <% end %>
-  </div>
-
-  <div class="mt-6">
-    <.link
-      navigate={~p"/admin/payouts/bank-accounts/new"}
-      class="bg-indigo-600 text-white px-4 py-2 rounded"
-    >
-      Add Bank Account
-    </.link>
-  </div>
-</div>
-
-<% end %>
-
-
-<%= if @live_action in [:new, :edit] do %>
-
-<div class="mt-10">
-  <h2 class="text-lg font-semibold mb-4">
-    <%= if @live_action == :edit, do: "Edit Bank Account", else: "Add Bank Account" %>
-  </h2>
-
-  <.form for={@form} phx-submit="save" class="space-y-4">
-
-    <.input field={@form[:bank_name]} label="Bank Name" />
-
-    <.input field={@form[:bank_code]} label="Bank Code" />
-
-    <.input field={@form[:account_name]} label="Account Name" />
-
-    <.input field={@form[:account_number]} label="Account Number" />
-
-    <div class="flex justify-end gap-3">
-      <.link navigate={~p"/admin/payouts/bank-accounts"}>
-        Cancel
+<Layouts.admin flash={@flash} current_user={@current_user}>
+  <%= if @live_action == :index do %>
+    <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <h1 class="font-display text-3xl font-semibold text-primary">Bank accounts</h1>
+      <.link
+        navigate={~p"/admin/payouts/bank-accounts/new"}
+        class="cd-cta inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content hover:brightness-110"
+      >
+        Add bank account
       </.link>
+    </header>
 
-      <.button class="bg-indigo-600 text-white">
-        Save Bank Account
-      </.button>
+    <ul class="divide-y divide-base-300">
+      <%= for account <- @bank_accounts do %>
+        <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="font-medium">{account.bank_name}</div>
+            <div class="text-sm text-base-content/60">
+              {account.account_name} · {account.account_number}
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <.link
+              navigate={~p"/admin/payouts/bank-accounts/#{account.id}/edit"}
+              class="text-sm font-medium text-primary hover:underline"
+            >
+              Edit
+            </.link>
+            <button
+              type="button"
+              phx-click="delete"
+              phx-value-id={account.id}
+              data-confirm="Are you sure?"
+              class="text-sm font-medium text-error hover:underline"
+            >
+              Delete
+            </button>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= if @live_action in [:new, :edit] do %>
+    <div class="mx-auto max-w-xl">
+      <h1 class="font-display mb-6 text-2xl font-semibold text-primary">
+        {if(@live_action == :edit, do: "Edit bank account", else: "Add bank account")}
+      </h1>
+
+      <.form for={@form} id="bank-account-form" phx-submit="save" class="space-y-4">
+        <.input field={@form[:bank_name]} label="Bank name" class="min-h-11" />
+        <.input field={@form[:bank_code]} label="Bank code" class="min-h-11" />
+        <.input field={@form[:account_name]} label="Account name" class="min-h-11" />
+        <.input field={@form[:account_number]} label="Account number" class="min-h-11" />
+
+        <div class="flex justify-end gap-3 pt-2">
+          <.link
+            navigate={~p"/admin/payouts/bank-accounts"}
+            class="min-h-11 inline-flex items-center text-sm font-medium hover:underline"
+          >
+            Cancel
+          </.link>
+          <.button class="cd-cta min-h-11 rounded-lg bg-primary px-4 font-semibold text-primary-content hover:brightness-110">
+            Save bank account
+          </.button>
+        </div>
+      </.form>
     </div>
-
-  </.form>
-</div>
-
-<% end %>
+  <% end %>
+</Layouts.admin>

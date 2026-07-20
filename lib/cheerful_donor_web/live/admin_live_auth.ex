@@ -1,10 +1,6 @@
 defmodule CheerfulDonorWeb.AdminLiveAuth do
   import Phoenix.LiveView
-  import Phoenix.LiveView.Helpers
 
-  @behaviour Phoenix.LiveView.OnMount
-
-  @impl true
   def on_mount(:default, _params, _session, socket) do
     case socket.assigns[:current_user] do
       %{role: :admin} ->

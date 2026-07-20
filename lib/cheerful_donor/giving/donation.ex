@@ -14,7 +14,19 @@ defmodule CheerfulDonor.Giving.Donation do
     defaults [
       :read,
       :destroy,
-      create: [:amount, :amount_paid, :currency, :status, :reference, :message, :type, :donor_id, :church_id, :campaign_id, :donation_intent_id],
+      create: [
+        :amount,
+        :amount_paid,
+        :currency,
+        :status,
+        :reference,
+        :message,
+        :type,
+        :donor_id,
+        :church_id,
+        :campaign_id,
+        :donation_intent_id
+      ],
       update: [:amount, :amount_paid, :status, :message, :paystack_id]
     ]
 
@@ -33,6 +45,20 @@ defmodule CheerfulDonor.Giving.Donation do
       filter expr(donor_id == ^arg(:donor_id))
 
       prepare build(load: [:campaign])
+    end
+  end
+
+  policies do
+    policy action_type(:read) do
+      authorize_if always()
+    end
+
+    policy action(:create) do
+      authorize_if context_equals(:system, true)
+    end
+
+    policy action(:update) do
+      authorize_if context_equals(:system, true)
     end
   end
 
@@ -82,6 +108,7 @@ defmodule CheerfulDonor.Giving.Donation do
     belongs_to :donor, CheerfulDonor.Accounts.Donor, allow_nil?: true
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
+
     belongs_to :donation_intent, CheerfulDonor.Giving.DonationIntent do
       attribute_writable? true
       allow_nil? true
@@ -90,22 +117,7 @@ defmodule CheerfulDonor.Giving.Donation do
     belongs_to :transaction, CheerfulDonor.Payments.Transaction, allow_nil?: true
   end
 
-  policies do
-    policy action_type(:read) do
-      authorize_if always()
-    end
-
-    policy action(:create) do
-      authorize_if context_equals(:system, true)
-    end
-
-    policy action(:update) do
-      authorize_if context_equals(:system, true)
-    end
-  end
-
   identities do
     identity :unique_intent, [:donation_intent_id]
   end
-
 end

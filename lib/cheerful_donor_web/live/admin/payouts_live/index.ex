@@ -51,13 +51,16 @@ defmodule CheerfulDonorWeb.Admin.PayoutsLive.Index do
         reference = Ecto.UUID.generate()
 
         {:ok, payout} =
-          Payouts.create_payout(%{
-            church_id: church.id,
-            bank_account_id: id,
-            amount: amount,
-            reference: reference,
-            status: :pending
-          }, actor)
+          Payouts.create_payout(
+            %{
+              church_id: church.id,
+              bank_account_id: id,
+              amount: amount,
+              reference: reference,
+              status: :pending
+            },
+            actor
+          )
 
         # 🚀 Background job
         Oban.insert!(
@@ -67,9 +70,9 @@ defmodule CheerfulDonorWeb.Admin.PayoutsLive.Index do
         )
 
         {:noreply,
-        socket
-        |> put_flash(:info, "Payout started")
-        |> push_navigate(to: ~p"/admin/dashboard")}
+         socket
+         |> put_flash(:info, "Payout started")
+         |> push_navigate(to: ~p"/admin/dashboard")}
     end
   end
 

@@ -1,89 +1,95 @@
-<div class="max-w-4xl mx-auto p-6">
-    <div class="bg-white shadow-xl rounded-2xl p-8">
-      <p class="text-gray-700 text-center">
-        Donating as:
-        <span class="font-semibold"><%= @donor.user && @donor.user.email %></span>
-      </p>
-      <h1 class="text-3xl text-gray-500 font-bold mb-2">
-        <%= @campaign.title %>
-      </h1>
+<Layouts.donor flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-lg">
+    <p class="text-sm text-base-content/65">
+      Donating as
+      <span class="font-medium text-base-content">{@donor.user && @donor.user.email}</span>
+    </p>
+    <h1 class="font-display mt-2 text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+      {@campaign.title}
+    </h1>
+    <p class="mt-1 text-xs uppercase tracking-wide text-base-content/50">
+      {@campaign.church && @campaign.church.name}
+    </p>
+    <p class="mt-4 text-base leading-relaxed text-base-content/70">{@campaign.description}</p>
 
-      <p class="text-gray-500 text-sm mb-4">
-        Church: <%= @campaign.church && @campaign.church.name %>
-      </p>
+    <%= if @campaign.goal_amount do %>
+      <p class="mt-6 text-sm text-base-content/60">Goal: ₦{@campaign.goal_amount}</p>
+    <% end %>
 
-      <p class="text-gray-700 mb-6">
-        <%= @campaign.description %>
-      </p>
+    <div class="mt-8 border-t border-base-300 pt-8">
+      <h2 class="font-display text-xl font-semibold">Make a donation</h2>
 
-      <%= if @campaign.goal_amount do %>
-        <div class="mb-6">
-          <p class="text-sm text-gray-500 mb-1">
-            Goal: ₦<%= @campaign.goal_amount %>
-          </p>
-
-          <div class="w-full bg-gray-200 rounded-full h-3">
-            <div class="bg-indigo-600 h-3 rounded-full" style="width: 0%"></div>
+      <form id="donor-donate-form" phx-submit="start_payment" class="mt-6 space-y-5">
+        <fieldset>
+          <legend class="mb-2 text-sm font-medium text-base-content/80">Donation type</legend>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="donation_type"
+                value="one_time"
+                checked={@donation_type == :one_time}
+                phx-change="set_donation_type"
+                class="radio radio-primary"
+              /> One time
+            </label>
+            <label class="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="donation_type"
+                value="recurring"
+                checked={@donation_type == :recurring}
+                phx-change="set_donation_type"
+                class="radio radio-primary"
+              /> Recurring
+            </label>
           </div>
-        </div>
-      <% end %>
+        </fieldset>
 
-      <div class="border-t pt-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-500">Make a Donation</h2>
-
-        <form phx-submit="start_payment">
-          <div class="mb-6">
-            <label class="block mb-2 text-gray-700 font-medium">Donation Type</label>
-            <div class="flex gap-4 text-gray-700">
-              <label>
-                <input
-                  type="radio"
-                  name="donation_type"
-                  value="one_time"
-                  checked={@donation_type == :one_time}
-                  phx-change="set_donation_type"
-                />
-                One Time
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="donation_type"
-                  value="recurring"
-                  checked={@donation_type == :recurring}
-                  phx-change="set_donation_type"
-                />
-                Recurring
-              </label>
-            </div>
+        <%= if @donation_type == :recurring do %>
+          <div>
+            <label for="interval" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Interval
+            </label>
+            <select
+              id="interval"
+              name="interval"
+              phx-change="set_interval"
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <%= for interval <- [:daily, :weekly, :monthly, :quarterly, :annually] do %>
+                <option value={interval} selected={@interval == interval}>
+                  {String.capitalize(to_string(interval))}
+                </option>
+              <% end %>
+            </select>
           </div>
+        <% end %>
 
-          <%= if @donation_type == :recurring do %>
-            <div class="mb-6">
-              <label class="block mb-2 text-gray-700 font-medium">Interval</label>
-              <select name="interval" value={@interval} phx-change="set_interval" class="w-full px-4 py-3 border rounded-lg text-gray-500">
-                <%= for interval <- [:daily, :weekly, :monthly, :quarterly, :annually] do %>
-                  <option value={interval}><%= String.capitalize(to_string(interval)) %></option>
-                <% end %>
-              </select>
-            </div>
-          <% end %>
-
+        <div>
+          <label for="amount" class="mb-1.5 block text-sm font-medium text-base-content/80">
+            Amount (₦)
+          </label>
           <input
+            id="amount"
             type="number"
             name="amount"
             value={@amount}
             phx-change="set_amount"
             phx-debounce="500"
-            placeholder="Enter amount"
-            class="w-full px-4 py-3 border rounded-lg text-gray-500"
+            placeholder="5000"
+            min="100"
+            class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
+        </div>
 
-          <button type="submit" class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg">
-            Donate Now
-          </button>
-        </form>
-      </div>
-
+        <button
+          type="submit"
+          class="cd-cta w-full min-h-12 rounded-lg bg-primary text-base font-semibold text-primary-content hover:brightness-110"
+        >
+          Donate now
+        </button>
+      </form>
     </div>
-</div>
+  </div>
+</Layouts.donor>

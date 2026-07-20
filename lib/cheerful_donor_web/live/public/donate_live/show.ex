@@ -2,7 +2,8 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
   use CheerfulDonorWeb, :live_view
   require Ash.Query
 
-  alias CheerfulDonor.Giving.{Campaign, DonationIntent}
+  alias CheerfulDonor.Giving
+  alias CheerfulDonor.Giving.Campaign
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Accounts.Donor
   alias CheerfulDonor.Paystack.Client
@@ -30,6 +31,7 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
 
     {:ok,
      socket
+     |> assign(:page_title, campaign.title)
      |> assign(:campaign, campaign)
      |> assign(:user_id, user_id)
      |> assign(:donor, donor)
@@ -40,10 +42,6 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
      |> assign(:loading, false)}
   end
 
-  # ========================
-  # Form Changes
-  # ========================
-
   @impl true
   def handle_event("update_form", params, socket) do
     {:noreply,
@@ -53,16 +51,8 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
      |> assign(:guest_name, params["guest_name"])}
   end
 
-  # ========================
-  # Start Payment
-  # ========================
-
   @impl true
-  def handle_event(
-        "start_payment",
-        _,
-        %{assigns: assigns} = socket
-      ) do
+  def handle_event("start_payment", _, %{assigns: assigns} = socket) do
     amount = assigns.amount
     donor = assigns.donor
     campaign = assigns.campaign
@@ -78,26 +68,19 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
 
       true ->
         with {int_amount, _} <- Integer.parse(amount) do
-          reference = Ecto.UUID.generate()
-
           attrs =
             %{
               amount: int_amount,
               currency: "NGN",
-              status: :pending,
-              reference: reference,
               campaign_id: campaign.id,
-              church_id: campaign.church_id
+              church_id: campaign.church_id,
+              type: :one_time
             }
             |> maybe_put_donor(donor)
             |> maybe_put_guest(guest_email, guest_name)
 
-          changeset =
-            DonationIntent
-            |> Ash.Changeset.for_create(:create, attrs)
-
-          case Ash.create(changeset) do
-            {:ok, intent} ->
+          case Giving.initiate_donation(attrs) do
+            {:ok, lookup} ->
               email =
                 if donor do
                   to_string(socket.assigns.current_user.email)
@@ -108,9 +91,8 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
               params = %{
                 email: email,
                 amount: int_amount * 100,
-                reference: intent.reference,
-                callback_url:
-                  CheerfulDonorWeb.Endpoint.url() <> "/paystack/callback"
+                reference: lookup.reference,
+                callback_url: CheerfulDonorWeb.Endpoint.url() <> "/paystack/callback"
               }
 
               case Client.initialize_transaction(params) do
@@ -120,14 +102,13 @@ defmodule CheerfulDonorWeb.Public.DonateLive.Show do
                 {:ok, %{"message" => message}} ->
                   {:noreply, put_flash(socket, :error, message)}
 
-                {:error, reason} ->
-                  IO.inspect(reason, label: "PAYSTACK ERROR")
+                {:error, _reason} ->
                   {:noreply, put_flash(socket, :error, "Payment failed")}
               end
 
             {:error, error} ->
               {:noreply,
-              put_flash(socket, :error, "Failed to create donation: #{inspect(error)}")}
+               put_flash(socket, :error, "Failed to create donation: #{inspect(error)}")}
           end
         else
           _ ->

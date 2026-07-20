@@ -3,7 +3,6 @@ defmodule CheerfulDonorWeb.AuthLiveRedirect do
 
   alias CheerfulDonor.Accounts
 
-  @impl true
   def redirect_user(conn, user) do
     cond do
       user.role == :admin and no_church?(user) ->

@@ -1,8 +1,10 @@
 defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
   use CheerfulDonorWeb, :live_view
   require Ash.Query
+  require Logger
 
-  alias CheerfulDonor.Giving.{Campaign, DonationIntent}
+  alias CheerfulDonor.Giving.Campaign
+  alias CheerfulDonor.Giving
   alias CheerfulDonor.Accounts
   alias CheerfulDonor.Accounts.Donor
   alias CheerfulDonor.Paystack.Client
@@ -62,8 +64,8 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
       {:noreply, assign(socket, :interval, String.to_atom(interval))}
     else
       {:noreply,
-      socket
-      |> put_flash(:error, "Invalid interval selected")}
+       socket
+       |> put_flash(:error, "Invalid interval selected")}
     end
   end
 
@@ -74,9 +76,9 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
 
   def handle_event("start_payment", _, %{assigns: %{donor: nil}} = socket) do
     {:noreply,
-    socket
-    |> put_flash(:error, "You must be logged in to donate.")
-    |> push_navigate(to: "/")}
+     socket
+     |> put_flash(:error, "You must be logged in to donate.")
+     |> push_navigate(to: "/")}
   end
 
   def handle_event("start_payment", _, %{assigns: %{amount: nil}} = socket) do
@@ -84,7 +86,6 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
   end
 
   def handle_event("start_payment", _, socket) do
-    user = socket.assigns.current_user
     donor = socket.assigns.donor
     campaign = socket.assigns.campaign
     amount = socket.assigns.amount
@@ -93,9 +94,9 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
     cond do
       is_nil(donor) ->
         {:noreply,
-        socket
-        |> put_flash(:error, "You must be logged in to donate.")
-        |> push_navigate(to: "/")}
+         socket
+         |> put_flash(:error, "You must be logged in to donate.")
+         |> push_navigate(to: "/")}
 
       is_nil(amount) or amount == "" ->
         {:noreply, put_flash(socket, :error, "Please enter an amount")}
@@ -118,47 +119,41 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
               |> Enum.map(&to_string/1)
 
             if donation_type == :recurring and to_string(interval) not in allowed_intervals do
-              {:noreply,
-              put_flash(socket, :error, "Invalid interval selected")}
+              {:noreply, put_flash(socket, :error, "Invalid interval selected")}
             else
-              # Create DonationIntent
-              case DonationIntent
-                  |> Ash.Changeset.for_create(:create, %{
-                        donor_id: donor.id,
-                        campaign_id: campaign.id,
-                        church_id: campaign.church_id,
-                        amount: int_amount,
-                        currency: "NGN",
-                        status: :pending,
-                        reference: reference,
-                        type: donation_type,
-                        interval: interval
-                      })
-                  |> Ash.create() do
-
-                {:ok, intent} ->
-                  # Generate donor token for Paystack callback
-                  donor_token = Phoenix.Token.sign(CheerfulDonorWeb.Endpoint, "donor auth", donor.id)
+              case Giving.initiate_donation(%{
+                     donor_id: donor.id,
+                     campaign_id: campaign.id,
+                     church_id: campaign.church_id,
+                     amount: int_amount,
+                     currency: "NGN",
+                     reference: reference,
+                     type: donation_type,
+                     interval: interval
+                   }) do
+                {:ok, lookup} ->
+                  donor_token =
+                    Phoenix.Token.sign(CheerfulDonorWeb.Endpoint, "donor auth", donor.id)
 
                   callback_url =
-                    CheerfulDonorWeb.Endpoint.url() <> "/paystack/callback?donor_token=#{donor_token}"
+                    CheerfulDonorWeb.Endpoint.url() <>
+                      "/paystack/callback?donor_token=#{donor_token}"
 
-                  # Initialize Paystack transaction
                   case Client.initialize_transaction(%{
-                        email: donor.user && to_string(donor.user.email) || "no-email@unknown.com",
-                        amount: int_amount * 100,
-                        reference: intent.reference,
-                        callback_url: callback_url
-                      }) do
+                         email:
+                           (donor.user && to_string(donor.user.email)) || "no-email@unknown.com",
+                         amount: int_amount * 100,
+                         reference: lookup.reference,
+                         callback_url: callback_url
+                       }) do
                     {:ok, %{"status" => true, "data" => %{"authorization_url" => url}}} ->
                       {:noreply,
-                      socket
-                      |> assign(:loading, true)
-                      |> redirect(external: url)}
+                       socket
+                       |> assign(:loading, true)
+                       |> redirect(external: url)}
 
                     {:ok, %{"status" => false, "message" => message}} ->
-                      {:noreply,
-                      put_flash(socket, :error, "Paystack error: #{message}")}
+                      {:noreply, put_flash(socket, :error, "Paystack error: #{message}")}
 
                     {:error, reason} ->
                       Logger.error("Paystack initialization error: #{inspect(reason)}")
@@ -166,7 +161,7 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
                   end
 
                 {:error, errors} ->
-                  Logger.error("Failed to create DonationIntent: #{inspect(errors)}")
+                  Logger.error("Failed to initiate donation: #{inspect(errors)}")
                   {:noreply, put_flash(socket, :error, "Failed to create donation.")}
               end
             end
@@ -180,9 +175,9 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
   @impl true
   def handle_info({:donation_confirmed, _donation_id}, socket) do
     {:noreply,
-    socket
-    |> put_flash(:info, "Donation successful! Thank you.")
-    |> assign(:paid, true)
-    |> assign(:loading, false)}
+     socket
+     |> put_flash(:info, "Donation successful! Thank you.")
+     |> assign(:paid, true)
+     |> assign(:loading, false)}
   end
 end

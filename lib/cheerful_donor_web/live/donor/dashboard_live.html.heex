@@ -1,220 +1,218 @@
-<div class="p-6">
-  <header class="flex items-center justify-between mb-6">
+<Layouts.donor flash={@flash} current_user={@current_user}>
+  <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
-      <h1 class="text-2xl font-semibold">
-        Welcome back, <%= @user_email || "Donor" %>
+      <h1 class="font-display text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
+        Welcome back
       </h1>
+      <p class="mt-1 text-sm text-base-content/65">{@user_email || "Donor"}</p>
     </div>
-
-    <div class="flex items-center space-x-3">
-      <a href="/donor/campaigns" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
-        Explore Campaigns
-      </a>
-      <a href="/sign-out" class="px-4 py-2 bg-white border text-gray-800 rounded-md text-sm">
-        Logout
-      </a>
-    </div>
+    <.link
+      navigate={~p"/donor/campaigns"}
+      class="cd-cta inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content hover:brightness-110"
+    >
+      Explore campaigns
+    </.link>
   </header>
 
-  <!-- Top cards -->
-  <section class="grid grid-cols-3 gap-4 mb-6">
-    <div class="bg-white p-4 rounded-lg shadow-sm">
-      <div class="text-xs text-gray-500">Total Given</div>
-      <div class="text-xl text-gray-800 font-bold">
-        ₦<%= @totals.total_given || 0 %>
+  <section class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="border-b border-base-300 pb-4">
+      <div class="text-xs uppercase tracking-wide text-base-content/50">Total given</div>
+      <div class="mt-1 font-display text-2xl font-semibold text-base-content">
+        ₦{@totals.total_given || 0}
       </div>
     </div>
-
-    <div class="bg-white p-4 rounded-lg shadow-sm">
-      <div class="text-xs text-gray-500">This Month</div>
-      <div class="text-xl text-gray-800 font-bold">
-        ₦<%= @totals.this_month || 0 %>
+    <div class="border-b border-base-300 pb-4">
+      <div class="text-xs uppercase tracking-wide text-base-content/50">This month</div>
+      <div class="mt-1 font-display text-2xl font-semibold text-base-content">
+        ₦{@totals.this_month || 0}
       </div>
     </div>
-
-    <div class="bg-white p-4 rounded-lg shadow-sm">
-      <div class="text-xs text-gray-500">Active Subscriptions</div>
-      <div class="text-xl text-gray-800 font-bold">
-        <%= length(@subscriptions || []) %>
+    <div class="border-b border-base-300 pb-4">
+      <div class="text-xs uppercase tracking-wide text-base-content/50">Subscriptions</div>
+      <div class="mt-1 font-display text-2xl font-semibold text-base-content">
+        {length(@subscriptions || [])}
       </div>
     </div>
   </section>
 
-  <!-- Tabs -->
-  <nav class="mb-4">
-    <div class="inline-flex bg-gray-100 rounded-md p-1">
-      <button phx-click="set_tab" phx-value-tab="donations"
-        class={"px-4 py-2 text-sm rounded-md " <>
-          (if @tab == "donations", do: "bg-white shadow", else: "text-gray-600")}>
-        Donations
-      </button>
-
-      <button phx-click="set_tab" phx-value-tab="subscriptions"
-        class={"px-4 py-2 text-sm rounded-md " <>
-          (if @tab == "subscriptions", do: "bg-white shadow", else: "text-gray-600")}>
-        Subscriptions
-      </button>
-
-      <button phx-click="set_tab" phx-value-tab="transactions"
-        class={"px-4 py-2 text-sm rounded-md " <>
-          (if @tab == "transactions", do: "bg-white shadow", else: "text-gray-600")}>
-        Transactions
-      </button>
-    </div>
+  <nav class="mb-6 flex flex-wrap gap-2" id="donor-tabs">
+    <button
+      type="button"
+      phx-click="set_tab"
+      phx-value-tab="donations"
+      class={[
+        "min-h-11 rounded-lg px-4 text-sm font-medium transition",
+        @tab == "donations" && "bg-primary text-primary-content",
+        @tab != "donations" && "bg-base-200 text-base-content/80 hover:bg-base-300"
+      ]}
+    >
+      Donations
+    </button>
+    <button
+      type="button"
+      phx-click="set_tab"
+      phx-value-tab="subscriptions"
+      class={[
+        "min-h-11 rounded-lg px-4 text-sm font-medium transition",
+        @tab == "subscriptions" && "bg-primary text-primary-content",
+        @tab != "subscriptions" && "bg-base-200 text-base-content/80 hover:bg-base-300"
+      ]}
+    >
+      Subscriptions
+    </button>
+    <button
+      type="button"
+      phx-click="set_tab"
+      phx-value-tab="transactions"
+      class={[
+        "min-h-11 rounded-lg px-4 text-sm font-medium transition",
+        @tab == "transactions" && "bg-primary text-primary-content",
+        @tab != "transactions" && "bg-base-200 text-base-content/80 hover:bg-base-300"
+      ]}
+    >
+      Transactions
+    </button>
   </nav>
 
-  <!-- Tab content -->
   <section>
-
-    <!-- Donations -->
     <%= if @tab == "donations" do %>
-      <div class="bg-white rounded-lg shadow-sm p-4">
-        <h2 class="text-lg text-gray-800 font-medium mb-4">Your Donations</h2>
-
+      <div>
+        <h2 class="font-display mb-4 text-lg font-semibold">Your donations</h2>
         <%= if Enum.empty?(@donations || []) do %>
-          <div class="text-sm text-gray-500 py-6 text-center">
+          <p class="py-10 text-center text-sm text-base-content/55">
             You haven’t made any donations yet.
-          </div>
+          </p>
         <% else %>
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs text-gray-500 border-b">
-                <th class="py-2">Reference</th>
-                <th class="py-2">Campaign</th>
-                <th class="py-2">Amount</th>
-                <th class="py-2">Status</th>
-                <th class="py-2">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for d <- @donations || [] do %>
-                <tr class="border-b text-gray-800">
-                  <td class="py-2"><%= d.reference || "-" %></td>
-                  <td class="py-2">
-                    <%= if d.campaign, do: d.campaign.title, else: "General" %>
-                  </td>
-                  <td class="py-2">₦<%= d.amount_paid || d.amount %></td>
-                  <td class="py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(d.status)}"}>
-                      <%= d.status %>
-                    </span>
-                  </td>
-                  <td class="py-2">
-                    <%= format_datetime(d.inserted_at) %>
-                  </td>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-base-300 text-left text-xs uppercase tracking-wide text-base-content/50">
+                  <th class="py-2 pr-4">Reference</th>
+                  <th class="py-2 pr-4">Campaign</th>
+                  <th class="py-2 pr-4">Amount</th>
+                  <th class="py-2 pr-4">Status</th>
+                  <th class="py-2">Date</th>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <%= for d <- @donations || [] do %>
+                  <tr class="border-b border-base-300/70 text-base-content">
+                    <td class="py-3 pr-4">{d.reference || "-"}</td>
+                    <td class="py-3 pr-4">
+                      {if(d.campaign, do: d.campaign.title, else: "General")}
+                    </td>
+                    <td class="py-3 pr-4">₦{d.amount_paid || d.amount}</td>
+                    <td class="py-3 pr-4">
+                      <span class={"text-xs #{status_label_class(d.status)}"}>{d.status}</span>
+                    </td>
+                    <td class="py-3">{format_datetime(d.inserted_at)}</td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
         <% end %>
       </div>
     <% end %>
 
-    <!-- Subscriptions -->
     <%= if @tab == "subscriptions" do %>
-      <div class="bg-white rounded-lg shadow-sm p-4">
-        <h2 class="text-lg text-gray-800 font-medium mb-4">Your Subscriptions</h2>
-
+      <div>
+        <h2 class="font-display mb-4 text-lg font-semibold">Your subscriptions</h2>
         <%= if Enum.empty?(@subscriptions || []) do %>
-          <div class="text-sm text-gray-500 py-6 text-center">
-            You don’t have any active subscriptions yet.
-          </div>
+          <p class="py-10 text-center text-sm text-base-content/55">
+            No active subscriptions yet.
+          </p>
         <% else %>
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs text-gray-500 border-b">
-                <th class="py-2">Actions</th>
-                <th class="py-2">Plan</th>
-                <th class="py-2">Amount</th>
-                <th class="py-2">Interval</th>
-                <th class="py-2">Next Charge</th>
-                <th class="py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for s <- @subscriptions do %>
-                <tr class="border-b text-gray-800">
-                  <td class="py-2">
-                    <%= if s.status == :active do %>
-                      <button
-                        phx-click="cancel_subscription"
-                        phx-value-id={s.id}
-                        class="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                      >
-                        Cancel
-                      </button>
-                    <% else %>
-                      -
-                    <% end %>
-                  </td>
-                  <td class="py-2"><%= s.subscription_code || "N/A" %></td>
-                  <td class="py-2">₦<%= s.amount %></td>
-                  <td class="py-2"><%= s.interval %></td>
-                  <td class="py-2">
-                    <%= if s.next_charge_at,
-                          do: format_datetime(s.next_charge_at),
-                          else: "-" %>
-                  </td>
-                  <td class="py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(s.status)}"}>
-                      <%= s.status %>
-                    </span>
-                  </td>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-base-300 text-left text-xs uppercase tracking-wide text-base-content/50">
+                  <th class="py-2 pr-4">Actions</th>
+                  <th class="py-2 pr-4">Plan</th>
+                  <th class="py-2 pr-4">Amount</th>
+                  <th class="py-2 pr-4">Interval</th>
+                  <th class="py-2 pr-4">Next charge</th>
+                  <th class="py-2">Status</th>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <%= for s <- @subscriptions do %>
+                  <tr class="border-b border-base-300/70">
+                    <td class="py-3 pr-4">
+                      <%= if s.status == :active do %>
+                        <button
+                          type="button"
+                          phx-click="cancel_subscription"
+                          phx-value-id={s.id}
+                          class="min-h-9 rounded-md bg-error px-3 text-xs font-semibold text-error-content"
+                        >
+                          Cancel
+                        </button>
+                      <% else %>
+                        —
+                      <% end %>
+                    </td>
+                    <td class="py-3 pr-4">{s.subscription_code || "N/A"}</td>
+                    <td class="py-3 pr-4">₦{s.amount}</td>
+                    <td class="py-3 pr-4">{s.interval}</td>
+                    <td class="py-3 pr-4">
+                      {if(s.next_charge_at, do: format_datetime(s.next_charge_at), else: "—")}
+                    </td>
+                    <td class="py-3">
+                      <span class={"text-xs #{status_label_class(s.status)}"}>{s.status}</span>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
         <% end %>
       </div>
     <% end %>
 
-    <!-- Transactions -->
     <%= if @tab == "transactions" do %>
-      <div class="bg-white rounded-lg shadow-sm p-4">
-        <h2 class="text-lg text-gray-800 font-medium mb-4">Your Transactions</h2>
-
+      <div>
+        <h2 class="font-display mb-4 text-lg font-semibold">Your transactions</h2>
         <%= if Enum.empty?(@transactions || []) do %>
-          <div class="text-sm text-gray-500 py-6 text-center">
-            No transactions yet.
-          </div>
+          <p class="py-10 text-center text-sm text-base-content/55">No transactions yet.</p>
         <% else %>
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="text-left text-xs text-gray-500 border-b">
-                <th class="py-2">Reference</th>
-                <th class="py-2">Amount</th>
-                <th class="py-2">Type</th>
-                <th class="py-2">Status</th>
-                <th class="py-2">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for t <- @transactions || [] do %>
-                <tr class="border-b text-gray-800">
-                  <td class="py-2"><%= t.reference || "-" %></td>
-                  <td class="py-2">₦<%= t.amount %></td>
-                  <td class="py-2">
-                    <%= cond do
-                      t.donation_id -> "Donation"
-                      t.subscription_id -> "Subscription"
-                      true -> "Other"
-                    end %>
-                  </td>
-                  <td class="py-2">
-                    <span class={"text-xs px-2 py-1 rounded #{status_label_class(t.status)}"}>
-                      <%= t.status %>
-                    </span>
-                  </td>
-                  <td class="py-2">
-                    <%= format_datetime(t.paid_at || t.inserted_at) %>
-                  </td>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-base-300 text-left text-xs uppercase tracking-wide text-base-content/50">
+                  <th class="py-2 pr-4">Reference</th>
+                  <th class="py-2 pr-4">Amount</th>
+                  <th class="py-2 pr-4">Type</th>
+                  <th class="py-2 pr-4">Status</th>
+                  <th class="py-2">Date</th>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <%= for t <- @transactions || [] do %>
+                  <tr class="border-b border-base-300/70">
+                    <td class="py-3 pr-4">{t.reference || "-"}</td>
+                    <td class="py-3 pr-4">₦{t.amount}</td>
+                    <td class="py-3 pr-4">
+                      <%= cond do %>
+                        <% t.donation_id -> %>
+                          Donation
+                        <% t.subscription_id -> %>
+                          Subscription
+                        <% true -> %>
+                          Other
+                      <% end %>
+                    </td>
+                    <td class="py-3 pr-4">
+                      <span class={"text-xs #{status_label_class(t.status)}"}>{t.status}</span>
+                    </td>
+                    <td class="py-3">{format_datetime(t.paid_at || t.inserted_at)}</td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
         <% end %>
       </div>
     <% end %>
-
   </section>
-</div>
+</Layouts.donor>

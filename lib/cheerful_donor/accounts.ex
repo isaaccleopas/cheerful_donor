@@ -2,6 +2,7 @@ defmodule CheerfulDonor.Accounts do
   use Ash.Domain, otp_app: :cheerful_donor, extensions: [AshAdmin.Domain]
 
   require Ash.Query
+
   admin do
     show? true
   end

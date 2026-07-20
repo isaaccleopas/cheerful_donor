@@ -15,7 +15,6 @@ defmodule CheerfulDonor.Paystack.Plans do
   def get_or_create(interval, amount) when interval in @intervals do
     # Generate a unique plan name (optional: include amount)
     name = "Donation #{interval} ₦#{amount}"
-    plan_key = "#{interval}-#{amount}"
 
     # Here you could cache plan_codes in ETS or DB if needed
     case Client.create_plan(name, amount, interval) do

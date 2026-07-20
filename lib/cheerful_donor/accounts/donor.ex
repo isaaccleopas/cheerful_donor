@@ -19,6 +19,23 @@ defmodule CheerfulDonor.Accounts.Donor do
     ]
   end
 
+  policies do
+    # allow create
+    policy action_type(:create) do
+      authorize_if always()
+    end
+
+    # user can read their own donor record
+    policy action_type(:read) do
+      authorize_if always()
+    end
+
+    # user can update their own donor record
+    policy action_type(:update) do
+      authorize_if expr(user_id == ^actor(:id))
+    end
+  end
+
   attributes do
     uuid_primary_key :id
 
@@ -43,23 +60,6 @@ defmodule CheerfulDonor.Accounts.Donor do
     has_many :donations, CheerfulDonor.Giving.Donation
     has_many :subscriptions, CheerfulDonor.Billing.Subscription
     has_many :transactions, CheerfulDonor.Payments.Transaction
-  end
-
-  policies do
-    # allow create
-    policy action_type(:create) do
-      authorize_if always()
-    end
-
-    # user can read their own donor record
-    policy action_type(:read) do
-      authorize_if always()
-    end
-
-    # user can update their own donor record
-    policy action_type(:update) do
-      authorize_if expr(user_id == ^actor(:id))
-    end
   end
 
   identities do

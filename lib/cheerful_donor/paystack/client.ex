@@ -17,8 +17,10 @@ defmodule CheerfulDonor.Paystack.Client do
   ]
 
   @http_options [
-    timeout: 8_000,         # 8 seconds connection timeout
-    recv_timeout: 10_000    # 10 seconds read timeout
+    # 8 seconds connection timeout
+    timeout: 8_000,
+    # 10 seconds read timeout
+    recv_timeout: 10_000
   ]
 
   # -------------------------
@@ -128,7 +130,8 @@ defmodule CheerfulDonor.Paystack.Client do
     body =
       %{
         customer: customer,
-        plan: plan_code   # 🔥 THIS IS THE FIX
+        # 🔥 THIS IS THE FIX
+        plan: plan_code
       }
       |> then(fn map ->
         case Map.get(params, :authorization) do

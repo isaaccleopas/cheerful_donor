@@ -59,12 +59,12 @@ defmodule CheerfulDonor.Billing do
 
   def cancel_subscription(%Subscription{} = sub) do
     with {:ok, _} <-
-          CheerfulDonor.Paystack.Client.disable_subscription(
-            sub.subscription_code,
-            sub.email_token
-          ),
-        {:ok, updated} <-
-          Ash.update(sub, %{status: :cancelled}) do
+           CheerfulDonor.Paystack.Client.disable_subscription(
+             sub.subscription_code,
+             sub.email_token
+           ),
+         {:ok, updated} <-
+           Ash.update(sub, %{status: :cancelled}) do
       {:ok, updated}
     else
       error -> error

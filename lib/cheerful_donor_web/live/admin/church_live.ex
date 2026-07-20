@@ -21,13 +21,13 @@ defmodule CheerfulDonorWeb.Admin.ChurchLive do
       |> Map.put("user_id", user.id)
 
     case CheerfulDonor.Accounts.Church
-        |> Ash.Changeset.for_create(:create, params, actor: user)
-        |> Ash.create() do
+         |> Ash.Changeset.for_create(:create, params, actor: user)
+         |> Ash.create() do
       {:ok, _church} ->
         {:noreply,
-        socket
-        |> put_flash(:info, "Church created successfully")
-        |> push_navigate(to: ~p"/admin/dashboard")}
+         socket
+         |> put_flash(:info, "Church created successfully")
+         |> push_navigate(to: ~p"/admin/dashboard")}
 
       {:error, error} ->
         IO.inspect(error, label: "Church create error")

@@ -12,7 +12,6 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
     user = socket.assigns.current_user
 
     if user do
-
       donor =
         Accounts.get_donor_by_user_id(
           user.id,
@@ -35,15 +34,15 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
       end
 
       {:ok,
-      socket
-      |> assign(:user_email, user.email)
-      |> assign(:donor, donor)
-      |> assign(:donations, donations)
-      |> assign(:subscriptions, subscriptions)
-      |> assign(:transactions, transactions)
-      |> assign(:totals, totals)
-      |> assign(:tab, "donations")
-      |> assign(:loading, false)}
+       socket
+       |> assign(:user_email, user.email)
+       |> assign(:donor, donor)
+       |> assign(:donations, donations)
+       |> assign(:subscriptions, subscriptions)
+       |> assign(:transactions, transactions)
+       |> assign(:totals, totals)
+       |> assign(:tab, "donations")
+       |> assign(:loading, false)}
     else
       {:ok, redirect(socket, to: "/login")}
     end
@@ -52,7 +51,7 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
   defp calc_totals(donations) when is_list(donations) do
     total_given =
       donations
-      |> Enum.map(& &1.amount_paid || &1.amount)
+      |> Enum.map(&(&1.amount_paid || &1.amount))
       |> Enum.filter(& &1)
       |> Enum.sum()
 
@@ -61,9 +60,11 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
       |> Enum.filter(fn
         %{inserted_at: %DateTime{} = dt} ->
           dt.month == DateTime.utc_now().month and dt.year == DateTime.utc_now().year
-        _ -> false
+
+        _ ->
+          false
       end)
-      |> Enum.map(& &1.amount_paid || &1.amount)
+      |> Enum.map(&(&1.amount_paid || &1.amount))
       |> Enum.sum()
 
     active_subs = 0
@@ -90,6 +91,26 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
      |> assign(:subscriptions, subscriptions)
      |> assign(:transactions, transactions)
      |> assign(:totals, calc_totals(donations))}
+  end
+
+  @impl true
+  def handle_event("cancel_subscription", %{"id" => id}, socket) do
+    actor = socket.assigns.current_user
+
+    sub =
+      CheerfulDonor.Billing.Subscription
+      |> Ash.get!(id, actor: actor)
+
+    case CheerfulDonor.Billing.cancel_subscription(sub) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Subscription cancelled")
+         |> reload_subscriptions()}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to cancel subscription")}
+    end
   end
 
   # PubSub updates for donations and recurring payments
@@ -125,29 +146,6 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
   def handle_info({:recurring_payment_failed, _sub_id}, socket) do
     {:noreply,
      put_flash(socket, :error, "A recurring payment failed — please check your payment method.")}
-  end
-
-  @impl true
-  def handle_event("cancel_subscription", %{"id" => id}, socket) do
-    actor = socket.assigns.current_user
-
-    sub =
-      CheerfulDonor.Billing.Subscription
-      |> Ash.get!(id, actor: actor)
-
-    IO.inspect(sub.email_token, label: "EMAIL TOKEN")
-    IO.inspect(sub.subscription_code, label: "SUB CODE")
-    case CheerfulDonor.Billing.cancel_subscription(sub) do
-      {:ok, _} ->
-        {:noreply,
-        socket
-        |> put_flash(:info, "Subscription cancelled")
-        |> reload_subscriptions()}
-
-      {:error, _} ->
-        {:noreply,
-        put_flash(socket, :error, "Failed to cancel subscription")}
-    end
   end
 
   defp reload_subscriptions(socket) do

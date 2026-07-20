@@ -79,5 +79,4 @@ defmodule CheerfulDonor.Billing.PaymentMethod do
     has_many :subscriptions, CheerfulDonor.Billing.Subscription
     has_many :transactions, CheerfulDonor.Payments.Transaction
   end
-
 end

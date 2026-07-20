@@ -11,7 +11,8 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
 
   @impl true
   def mount(_params, _session, socket) do
-    user = Accounts.get_user_with_church!(socket.assigns.current_user.id, socket.assigns.current_user)
+    user =
+      Accounts.get_user_with_church!(socket.assigns.current_user.id, socket.assigns.current_user)
 
     {:ok, assign(socket, current_user: user)}
   end
@@ -85,9 +86,9 @@ defmodule CheerfulDonorWeb.Admin.CampaignLive.Form do
     case Form.submit(form, params: params, actor: current_user) do
       {:ok, campaign} ->
         {:noreply,
-        socket
-        |> put_flash(:info, "Campaign saved successfully")
-        |> push_navigate(to: ~p"/admin/campaigns/#{campaign.id}")}
+         socket
+         |> put_flash(:info, "Campaign saved successfully")
+         |> push_navigate(to: ~p"/admin/campaigns/#{campaign.id}")}
 
       {:error, form} ->
         IO.inspect(form.errors, label: "Campaign form errors")

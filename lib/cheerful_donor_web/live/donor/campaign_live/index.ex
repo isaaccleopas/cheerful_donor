@@ -1,7 +1,6 @@
 defmodule CheerfulDonorWeb.Donor.CampaignLive.Index do
   use CheerfulDonorWeb, :live_view
 
-  alias CheerfulDonor.Giving
   alias CheerfulDonor.Giving.Campaign
 
   @impl true

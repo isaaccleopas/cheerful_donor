@@ -11,10 +11,30 @@ defmodule CheerfulDonor.Accounts.Church do
   end
 
   actions do
-    defaults [:read, :destroy,
+    defaults [
+      :read,
+      :destroy,
       create: [:name, :email, :phone, :address, :user_id],
       update: [:name, :email, :phone, :address]
     ]
+  end
+
+  policies do
+    # PUBLIC READ ACCESS
+    policy action(:read) do
+      authorize_if always()
+    end
+
+    # Only admin can create
+    policy action(:create) do
+      authorize_if expr(^actor(:role) == :admin)
+      authorize_if CheerfulDonor.Accounts.Checks.AdminHasNoChurch
+    end
+
+    # Only owning admin can update/delete
+    policy action([:update, :destroy]) do
+      authorize_if expr(user_id == ^actor(:id))
+    end
   end
 
   attributes do
@@ -49,23 +69,5 @@ defmodule CheerfulDonor.Accounts.Church do
 
   identities do
     identity :unique_user_church, [:user_id]
-  end
-
-  policies do
-    # PUBLIC READ ACCESS
-    policy action(:read) do
-      authorize_if always()
-    end
-
-    # Only admin can create
-    policy action(:create) do
-      authorize_if expr(^actor(:role) == :admin)
-      authorize_if CheerfulDonor.Accounts.Checks.AdminHasNoChurch
-    end
-
-    # Only owning admin can update/delete
-    policy action([:update, :destroy]) do
-      authorize_if expr(user_id == ^actor(:id))
-    end
   end
 end

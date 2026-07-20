@@ -11,6 +11,9 @@ defmodule CheerfulDonorWeb.Public.CampaignLive.Index do
       |> Ash.Query.load(:church)
       |> Ash.read!()
 
-    {:ok, assign(socket, :campaigns, campaigns)}
+    {:ok,
+     socket
+     |> assign(:page_title, "Campaigns")
+     |> assign(:campaigns, campaigns)}
   end
 end

@@ -1,52 +1,53 @@
-<div id="history" class="mt-10">
-    <%= if @payouts == [] do %>
+<Layouts.admin flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-3xl">
+    <header class="mb-8 flex items-center justify-between gap-4">
+      <h1 class="font-display text-3xl font-semibold text-primary">Payout history</h1>
+      <.link
+        navigate={~p"/admin/payouts"}
+        class="text-sm font-medium text-primary hover:underline"
+      >
+        Back to payouts
+      </.link>
+    </header>
 
-        <p class="text-gray-500">No payouts yet</p>
-
-    <% else %>
-    <h2 class="text-xl font-semibold mb-4">Payout History</h2>
-
-    <table class="w-full border rounded">
-        <thead class="bg-gray-100 text-left">
-        <tr>
-            <th class="p-2">Date</th>
-            <th class="p-2">Bank</th>
-            <th class="p-2">Amount</th>
-            <th class="p-2">Status</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        <%= for payout <- @payouts do %>
-            <tr class="border-t">
-            <td class="p-2">
-                <%= Calendar.strftime(payout.inserted_at, "%d %b %Y") %>
-            </td>
-
-            <td class="p-2">
-                <%= payout.bank_account.bank_name %>
-                (<%= payout.bank_account.account_number %>)
-            </td>
-
-            <td class="p-2">
-                ₦<%= payout.amount %>
-            </td>
-
-            <td class="p-2">
-                <span class={
-                case payout.status do
-                    :success -> "text-green-600"
-                    :failed -> "text-red-600"
-                    :pending -> "text-yellow-600"
-                    :processing -> "text-blue-600"
-                end
-                }>
-                <%= payout.status %>
-                </span>
-            </td>
-            </tr>
-        <% end %>
-        </tbody>
-    </table>
-  <% end %>
-</div>
+    <div id="history">
+      <%= if @payouts == [] do %>
+        <p class="py-12 text-center text-base-content/55">No payouts yet</p>
+      <% else %>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-base-300 text-left text-xs uppercase tracking-wide text-base-content/50">
+                <th class="p-2">Date</th>
+                <th class="p-2">Bank</th>
+                <th class="p-2">Amount</th>
+                <th class="p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%= for payout <- @payouts do %>
+                <tr class="border-b border-base-300/70">
+                  <td class="p-2">{Calendar.strftime(payout.inserted_at, "%d %b %Y")}</td>
+                  <td class="p-2">
+                    {payout.bank_account.bank_name} ({payout.bank_account.account_number})
+                  </td>
+                  <td class="p-2">₦{payout.amount}</td>
+                  <td class="p-2">
+                    <span class={[
+                      payout.status == :success && "text-success",
+                      payout.status == :failed && "text-error",
+                      payout.status == :pending && "text-warning",
+                      payout.status == :processing && "text-info"
+                    ]}>
+                      {payout.status}
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</Layouts.admin>
