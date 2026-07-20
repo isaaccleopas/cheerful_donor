@@ -1,5 +1,4 @@
 defmodule CheerfulDonorWeb.DonorDashboardView do
-
   def format_datetime(nil), do: "-"
   def format_datetime(%DateTime{} = dt), do: DateTime.to_string(dt)
   def format_datetime(%NaiveDateTime{} = ndt), do: NaiveDateTime.to_string(ndt)

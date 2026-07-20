@@ -1,0 +1,83 @@
+<Layouts.marketing flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-lg px-4 py-12 sm:px-6 lg:py-16">
+    <header class="mb-8">
+      <p class="text-sm font-medium uppercase tracking-wide text-primary/80">
+        {@campaign.church && @campaign.church.name}
+      </p>
+      <h1 class="font-display mt-2 text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+        {@campaign.title}
+      </h1>
+      <p class="mt-3 text-base leading-relaxed text-base-content/70">
+        {@campaign.description}
+      </p>
+    </header>
+
+    <div class="border-t border-base-300 pt-8">
+      <h2 class="font-display text-xl font-semibold text-base-content">Make a donation</h2>
+      <p class="mt-1 text-sm text-base-content/60">
+        Amounts in NGN. You’ll complete payment securely with Paystack.
+      </p>
+
+      <form
+        id="public-donate-form"
+        phx-submit="start_payment"
+        phx-change="update_form"
+        class="mt-6 space-y-4"
+      >
+        <%= unless @donor do %>
+          <div>
+            <label for="guest_name" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Your name
+            </label>
+            <input
+              id="guest_name"
+              type="text"
+              name="guest_name"
+              value={@guest_name}
+              placeholder="Full name"
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+
+          <div>
+            <label for="guest_email" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Email
+            </label>
+            <input
+              id="guest_email"
+              type="email"
+              name="guest_email"
+              value={@guest_email}
+              placeholder="you@example.com"
+              required
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+        <% end %>
+
+        <div>
+          <label for="amount" class="mb-1.5 block text-sm font-medium text-base-content/80">
+            Amount (₦)
+          </label>
+          <input
+            id="amount"
+            type="number"
+            name="amount"
+            value={@amount}
+            placeholder="5000"
+            min="100"
+            required
+            class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="cd-cta w-full min-h-12 rounded-lg bg-primary text-base font-semibold text-primary-content hover:brightness-110"
+        >
+          Donate now
+        </button>
+      </form>
+    </div>
+  </div>
+</Layouts.marketing>

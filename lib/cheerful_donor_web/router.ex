@@ -26,30 +26,39 @@ defmodule CheerfulDonorWeb.Router do
     plug :set_actor, :user
   end
 
-  # ------------------------------
-  # 🔹 AUTHENTICATED LIVEVIEW AREA
-  # ------------------------------
-  scope "/", CheerfulDonorWeb do
+  scope "/", CheerfulDonorWeb.Public do
     pipe_through :browser
 
-    live_session :donor_auth,
+    live_session :public,
+      on_mount: [
+        {CheerfulDonorWeb.LiveUserAuth, :current_user}
+      ] do
+      live "/", HomeLive, :index
+      live "/campaigns", CampaignLive.Index, :index
+      live "/donate/:slug", DonateLive.Show
+      live "/register", AuthLive.Index, :register
+      live "/sign-in", AuthLive.Index, :sign_in
+    end
+  end
+
+  scope "/donor", CheerfulDonorWeb.Donor do
+    pipe_through :browser
+
+    live_session :donor,
       on_mount: [
         {CheerfulDonorWeb.LiveUserAuth, :current_user},
-        {CheerfulDonorWeb.LiveUserAuth, :live_user_required}
+        {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
+        {CheerfulDonorWeb.DonorLiveAuth, :default}
       ] do
+      live "/campaigns", CampaignLive.Index, :index
+      live "/donate/:slug", DonateLive.Show
 
-      # donor routes
-      live "/donor/dashboard", DonorDashboardLive
-      live "/donate", DonateLive
-      live "/campaigns/:id/donate", CampaignDonateLive, :index
-
-      # # admin routes
-      # live "/admin/dashboard", AdminDashboardLive
-      # live "/admin/church/new", AdminChurchLive, :new
-      # live "/admin/campaign/new", AdminCampaignLive, :new
-      # live "/admin/churches", AdminChurchesLive, :index
-      # live "/admin/campaigns", AdminCampaignsLive, :index
+      live "/dashboard", DashboardLive, :index
     end
+  end
+
+  scope "/admin", CheerfulDonorWeb.Admin do
+    pipe_through :browser
 
     live_session :admin,
       on_mount: [
@@ -57,49 +66,32 @@ defmodule CheerfulDonorWeb.Router do
         {CheerfulDonorWeb.LiveUserAuth, :live_user_required},
         {CheerfulDonorWeb.AdminLiveAuth, :default}
       ] do
+      live "/dashboard", DashboardLive, :index
 
-      live "/admin", AdminDashboardLive, :index
-      live "/admin/churches", AdminChurchesLive, :index
-      live "/admin/churches/new", AdminChurchLive, :new
-      live "/admin/campaigns", AdminCampaignsLive, :index
-      live "/admin/campaigns/new", AdminCampaignLive, :new
+      live "/church/new", ChurchLive, :new
+
+      live "/payouts/bank-accounts", BankAccountLive.Index, :index
+      live "/payouts/bank-accounts/new", BankAccountLive.Index, :new
+      live "/payouts/bank-accounts/:id/edit", BankAccountLive.Index, :edit
+
+      live "/campaigns", CampaignLive.Index, :index
+      live "/campaigns/new", CampaignLive.Form, :new
+      live "/campaigns/:id/edit", CampaignLive.Form, :edit
+      live "/campaigns/:id", CampaignLive.Show, :show
+
+      live "/payouts", PayoutsLive.Index
+      live "/payouts/history", PayoutsLive.History
     end
-
-    # ash_authentication_live_session :authenticated_routes do
-    #   # Require logged-in user unless otherwise configured in LV
-    #   live "/donor/dashboard", DonorDashboardLive, :show
-    #   live "/donate", DonateLive, :index
-    # end
   end
 
-  # ------------------------------
-  # 🔹 MAIN SITE ROUTES
-  # ------------------------------
   scope "/", CheerfulDonorWeb do
     pipe_through :browser
-
-    live_session :public,
-      on_mount: [{CheerfulDonorWeb.LiveUserAuth, :current_user}] do
-
-      live "/", HomeLive, :index
-      live "/register", AuthLive.Index, :register
-      live "/sign-in", AuthLive.Index, :sign_in
-    end
 
     get "/paystack/callback", PaystackCallbackController, :handle
     get "/paystack/verify", VerifyController, :handle
 
     auth_routes AuthController, CheerfulDonor.Accounts.User, path: "/auth"
     sign_out_route AuthController
-
-    # sign_in_route register_path: "/register",
-    #               reset_path: "/reset",
-    #               auth_routes_prefix: "/auth",
-    #               on_mount: [{CheerfulDonorWeb.LiveUserAuth, :live_no_user}],
-    #               overrides: [
-    #                 CheerfulDonorWeb.AuthOverrides,
-    #                 Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-    #               ]
 
     reset_route auth_routes_prefix: "/auth",
                 overrides: [

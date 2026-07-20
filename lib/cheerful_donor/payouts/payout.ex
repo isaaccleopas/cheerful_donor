@@ -10,21 +10,24 @@ defmodule CheerfulDonor.Payouts.Payout do
   end
 
   actions do
-    defaults [:read, :destroy,
-    create: [
-      :amount,
-      :status,
-      :currency,
-      :paid_at,
-      :reference,
-      :church_id,
-      :bank_account_id
-    ],
-    update: [
-      :status,
-      :paid_at,
+    defaults [
+      :read,
+      :destroy,
+      create: [
+        :amount,
+        :status,
+        :currency,
+        :paid_at,
+        :reference,
+        :church_id,
+        :bank_account_id,
+        :transfer_code
+      ],
+      update: [
+        :status,
+        :paid_at
+      ]
     ]
-  ]
   end
 
   attributes do
@@ -48,6 +51,10 @@ defmodule CheerfulDonor.Payouts.Payout do
       constraints one_of: CheerfulDonor.Enums.payout_statuses()
     end
 
+    attribute :transfer_code, :string do
+      public? true
+    end
+
     attribute :paid_at, :utc_datetime, public?: true
     attribute :reference, :string, public?: true
     timestamps()
@@ -57,5 +64,4 @@ defmodule CheerfulDonor.Payouts.Payout do
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :bank_account, CheerfulDonor.Payouts.BankAccount
   end
-
 end

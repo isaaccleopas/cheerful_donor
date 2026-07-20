@@ -10,18 +10,25 @@ defmodule CheerfulDonor.Payouts.BankAccount do
   end
 
   actions do
-    defaults [:read, :destroy,
-    create: [
-      :bank_name,
-      :account_number,
-      :account_name,
-      :church_id
-    ],
-    update: [
-      :bank_name,
-      :account_number,
-      :account_name
-    ]]
+    defaults [
+      :read,
+      :destroy,
+      create: [
+        :bank_name,
+        :account_number,
+        :account_name,
+        :bank_code,
+        :recipient_code,
+        :church_id
+      ],
+      update: [
+        :bank_name,
+        :account_number,
+        :account_name,
+        :bank_code,
+        :recipient_code
+      ]
+    ]
   end
 
   attributes do
@@ -42,6 +49,15 @@ defmodule CheerfulDonor.Payouts.BankAccount do
       public? true
     end
 
+    attribute :bank_code, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :recipient_code, :string do
+      public? true
+    end
+
     timestamps()
   end
 
@@ -49,5 +65,4 @@ defmodule CheerfulDonor.Payouts.BankAccount do
     belongs_to :church, CheerfulDonor.Accounts.Church
     has_many :payouts, CheerfulDonor.Payouts.Payout
   end
-
 end

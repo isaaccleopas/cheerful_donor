@@ -61,6 +61,8 @@ config :spark,
 
 config :cheerful_donor,
   ecto_repos: [CheerfulDonor.Repo],
+  event_stores: [CheerfulDonor.EventStore],
+  start_projections: true,
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [
     CheerfulDonor.Paystack,

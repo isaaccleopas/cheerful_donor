@@ -53,52 +53,21 @@ defmodule CheerfulDonor.Billing do
 
   def get_subscriptions_for_donor(donor_id) do
     Subscription
-    |> Ash.Query.filter(donor_id == ^donor_id)
-    |> read!()
+    |> Ash.Query.for_read(:for_donor, %{donor_id: donor_id})
+    |> Ash.read!()
+  end
+
+  def cancel_subscription(%Subscription{} = sub) do
+    with {:ok, _} <-
+           CheerfulDonor.Paystack.Client.disable_subscription(
+             sub.subscription_code,
+             sub.email_token
+           ),
+         {:ok, updated} <-
+           Ash.update(sub, %{status: :cancelled}) do
+      {:ok, updated}
+    else
+      error -> error
+    end
   end
 end
-
-# defmodule CheerfulDonor.Billing do
-#   use Ash.Domain,
-#     otp_app: :cheerful_donor
-
-#   resources do
-#     resource CheerfulDonor.Billing.PaymentMethod
-#     resource CheerfulDonor.Billing.Subscription
-#   end
-
-#   @doc """
-#   Lookup a subscription by its Paystack subscription_code.
-#   """
-#   def get_subscription_by_code(code) do
-#     Subscription
-#     |> Ash.Query.filter(subscription_code: ^code)
-#     |> Ash.read_one()
-#   end
-
-#   @doc """
-#   Lookup a donor by their subscription code.
-#   """
-#   def get_donor_by_subscription(subscription_code) do
-#     with {:ok, %Subscription{} = sub} <- get_subscription_by_code(subscription_code),
-#          {:ok, %Donor{} = donor} <- get_donor_by_id(sub.donor_id) do
-#       {:ok, donor}
-#     else
-#       _ -> {:error, :not_found}
-#     end
-#   end
-
-#   @doc """
-#   Update a subscription record.
-#   """
-#   def update_subscription(%Subscription{} = sub, attrs) do
-#     Ash.update(sub, attrs)
-#   end
-
-#   @doc """
-#   Create a subscription record.
-#   """
-#   def create_subscription(attrs) do
-#     Ash.create(Subscription, attrs)
-#   end
-# end

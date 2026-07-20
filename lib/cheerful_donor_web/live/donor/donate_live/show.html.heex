@@ -1,0 +1,95 @@
+<Layouts.donor flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-lg">
+    <p class="text-sm text-base-content/65">
+      Donating as
+      <span class="font-medium text-base-content">{@donor.user && @donor.user.email}</span>
+    </p>
+    <h1 class="font-display mt-2 text-3xl font-semibold tracking-tight text-base-content sm:text-4xl">
+      {@campaign.title}
+    </h1>
+    <p class="mt-1 text-xs uppercase tracking-wide text-base-content/50">
+      {@campaign.church && @campaign.church.name}
+    </p>
+    <p class="mt-4 text-base leading-relaxed text-base-content/70">{@campaign.description}</p>
+
+    <%= if @campaign.goal_amount do %>
+      <p class="mt-6 text-sm text-base-content/60">Goal: ₦{@campaign.goal_amount}</p>
+    <% end %>
+
+    <div class="mt-8 border-t border-base-300 pt-8">
+      <h2 class="font-display text-xl font-semibold">Make a donation</h2>
+
+      <form id="donor-donate-form" phx-submit="start_payment" class="mt-6 space-y-5">
+        <fieldset>
+          <legend class="mb-2 text-sm font-medium text-base-content/80">Donation type</legend>
+          <div class="flex flex-wrap gap-4">
+            <label class="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="donation_type"
+                value="one_time"
+                checked={@donation_type == :one_time}
+                phx-change="set_donation_type"
+                class="radio radio-primary"
+              /> One time
+            </label>
+            <label class="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="donation_type"
+                value="recurring"
+                checked={@donation_type == :recurring}
+                phx-change="set_donation_type"
+                class="radio radio-primary"
+              /> Recurring
+            </label>
+          </div>
+        </fieldset>
+
+        <%= if @donation_type == :recurring do %>
+          <div>
+            <label for="interval" class="mb-1.5 block text-sm font-medium text-base-content/80">
+              Interval
+            </label>
+            <select
+              id="interval"
+              name="interval"
+              phx-change="set_interval"
+              class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <%= for interval <- [:daily, :weekly, :monthly, :quarterly, :annually] do %>
+                <option value={interval} selected={@interval == interval}>
+                  {String.capitalize(to_string(interval))}
+                </option>
+              <% end %>
+            </select>
+          </div>
+        <% end %>
+
+        <div>
+          <label for="amount" class="mb-1.5 block text-sm font-medium text-base-content/80">
+            Amount (₦)
+          </label>
+          <input
+            id="amount"
+            type="number"
+            name="amount"
+            value={@amount}
+            phx-change="set_amount"
+            phx-debounce="500"
+            placeholder="5000"
+            min="100"
+            class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4 text-base-content placeholder:text-base-content/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="cd-cta w-full min-h-12 rounded-lg bg-primary text-base font-semibold text-primary-content hover:brightness-110"
+        >
+          Donate now
+        </button>
+      </form>
+    </div>
+  </div>
+</Layouts.donor>

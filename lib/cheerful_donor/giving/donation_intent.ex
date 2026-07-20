@@ -2,7 +2,8 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "donation_intents"
@@ -10,11 +11,57 @@ defmodule CheerfulDonor.Giving.DonationIntent do
   end
 
   actions do
-    defaults [:read, :destroy,
-    update: [:status, :meta]
-  ]
+    defaults [:read, :destroy]
+
     create :create do
-      accept [:guest_email, :guest_name, :reference, :amount, :currency, :status, :meta, :donor_id, :campaign_id, :church_id]
+      accept [
+        :guest_email,
+        :guest_name,
+        :reference,
+        :amount,
+        :currency,
+        :status,
+        :interval,
+        :type,
+        :meta,
+        :donor_id,
+        :campaign_id,
+        :church_id
+      ]
+    end
+
+    update :mark_successful do
+      accept []
+
+      change set_attribute(:status, :successful)
+    end
+
+    read :read_by_reference do
+      argument :reference, :string, allow_nil?: false
+      filter expr(reference == ^arg(:reference))
+    end
+  end
+
+  policies do
+    policy action(:create) do
+      authorize_if always()
+    end
+
+    policy action(:read_by_reference) do
+      authorize_if always()
+    end
+
+    policy action_type(:read) do
+      # For now, allow all reads
+      authorize_if always()
+    end
+
+    policy action_type([:create, :update, :destroy]) do
+      authorize_if always()
+    end
+
+    policy action_type(:update) do
+      authorize_if context_equals(:system, true)
     end
   end
 
@@ -23,6 +70,7 @@ defmodule CheerfulDonor.Giving.DonationIntent do
 
     attribute :guest_email, :string, public?: true
     attribute :guest_name, :string, public?: true
+
     attribute :reference, :string do
       allow_nil? false
       public? true
@@ -45,6 +93,19 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       default :pending
       constraints one_of: CheerfulDonor.Enums.donation_statuses()
     end
+
+    attribute :interval, :atom do
+      allow_nil? true
+      public? true
+      constraints one_of: CheerfulDonor.Enums.subscription_intervals()
+    end
+
+    attribute :type, :atom do
+      allow_nil? false
+      default :one_time
+      constraints one_of: [:one_time, :recurring]
+    end
+
     attribute :meta, :map, public?: true
     timestamps()
   end
@@ -54,15 +115,18 @@ defmodule CheerfulDonor.Giving.DonationIntent do
       attribute_writable? true
       allow_nil? true
     end
+
     belongs_to :church, CheerfulDonor.Accounts.Church
     belongs_to :campaign, CheerfulDonor.Giving.Campaign, allow_nil?: true
 
     belongs_to :payment_method, CheerfulDonor.Billing.PaymentMethod, allow_nil?: true
 
     has_one :donation, CheerfulDonor.Giving.Donation do
-      source_attribute :id                 # primary key in DonationIntent
-      destination_attribute :donation_intent_id  # foreign key in Donation
+      # primary key in DonationIntent
+      source_attribute :id
+
+      # foreign key in Donation
+      destination_attribute :donation_intent_id
     end
   end
-
 end

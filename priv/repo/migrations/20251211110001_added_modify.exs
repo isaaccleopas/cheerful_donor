@@ -138,12 +138,13 @@ defmodule CheerfulDonor.Repo.Migrations.AddedModify do
 
     alter table(:subscriptions) do
       modify :status, :text, default: "active"
+
       modify :subscription_code,
-        references(:churches,
-          column: :id,
-          name: "subscriptions_church_id_fkey",
-          type: :uuid
-        )
+             references(:churches,
+               column: :id,
+               name: "subscriptions_church_id_fkey",
+               type: :uuid
+             )
     end
 
     execute("ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_church_id_fkey;")
@@ -155,6 +156,7 @@ defmodule CheerfulDonor.Repo.Migrations.AddedModify do
     end
 
     execute("DROP INDEX IF EXISTS donors_unique_user_index;")
+
     alter table(:donors) do
       modify :user_id, :uuid, null: true
     end

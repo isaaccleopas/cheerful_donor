@@ -1,0 +1,51 @@
+<Layouts.admin flash={@flash} current_user={@current_user}>
+  <div class="mx-auto max-w-xl space-y-8">
+    <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <h1 class="font-display text-3xl font-semibold text-primary">Payouts</h1>
+      <.link
+        navigate={~p"/admin/payouts/history"}
+        class="cd-cta inline-flex min-h-11 items-center rounded-lg border border-base-300 px-4 text-sm font-semibold hover:bg-base-200"
+      >
+        View history
+      </.link>
+    </header>
+
+    <div class="border-b border-base-300 pb-4">
+      <div class="text-xs uppercase tracking-wide text-base-content/50">Available balance</div>
+      <div class="mt-1 font-display text-2xl font-semibold">₦{@balance}</div>
+    </div>
+
+    <.form for={@form} id="payout-form" phx-submit="payout" class="space-y-4">
+      <div>
+        <label for="bank_account_id" class="mb-1.5 block text-sm font-medium">Bank account</label>
+        <select
+          id="bank_account_id"
+          name="bank_account_id"
+          class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
+        >
+          <%= for acc <- @bank_accounts do %>
+            <option value={acc.id}>{acc.bank_name} — {acc.account_number}</option>
+          <% end %>
+        </select>
+      </div>
+
+      <div>
+        <label for="amount" class="mb-1.5 block text-sm font-medium">Amount</label>
+        <input
+          id="amount"
+          type="number"
+          name="amount"
+          value={@balance}
+          class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="cd-cta min-h-12 w-full rounded-lg bg-primary font-semibold text-primary-content hover:brightness-110"
+      >
+        Withdraw
+      </button>
+    </.form>
+  </div>
+</Layouts.admin>

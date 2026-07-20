@@ -17,6 +17,7 @@ defmodule CheerfulDonor.Paystack.WebhookEvent do
     end
 
     update :mark_processed do
+      primary? true
       accept [:processed]
       change set_attribute(:processed, true)
     end

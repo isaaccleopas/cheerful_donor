@@ -55,6 +55,10 @@ defmodule CheerfulDonor.MixProject do
       {:sourceror, "~> 1.8", only: [:dev, :test]},
       {:ash, "~> 3.0"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
+      {:commanded, "~> 1.4"},
+      {:commanded_eventstore_adapter, "~> 1.4"},
+      {:eventstore, "~> 1.4"},
+      {:typed_struct, "~> 0.3"},
       {:phoenix, "~> 1.8.2"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
@@ -94,10 +98,19 @@ defmodule CheerfulDonor.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ash.setup", "assets.setup", "assets.build", "run priv/repo/seeds.exs"],
+      setup: [
+        "deps.get",
+        "ash.setup",
+        "event_store.setup",
+        "assets.setup",
+        "assets.build",
+        "run priv/repo/seeds.exs"
+      ],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ash.setup --quiet", "test"],
+      "event_store.setup": ["event_store.create", "event_store.init"],
+      "event_store.reset": ["event_store.drop", "event_store.setup"],
+      test: ["event_store.setup", "ash.setup --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind cheerful_donor", "esbuild cheerful_donor"],
       "assets.deploy": [

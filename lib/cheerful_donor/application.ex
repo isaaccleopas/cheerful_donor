@@ -11,6 +11,8 @@ defmodule CheerfulDonor.Application do
       CheerfulDonorWeb.Telemetry,
       CheerfulDonor.Repo,
       {DNSCluster, query: Application.get_env(:cheerful_donor, :dns_cluster_query) || :ignore},
+      CheerfulDonor.CommandedApp,
+      CheerfulDonor.Giving,
       {Oban,
        AshOban.config(
          Application.fetch_env!(:cheerful_donor, :ash_domains),

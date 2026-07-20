@@ -1,8 +1,12 @@
 defmodule CheerfulDonor.Giving.Campaign do
+  require Ash.Expr
+  import Ash.Expr
+
   use Ash.Resource,
     otp_app: :cheerful_donor,
     domain: CheerfulDonor.Giving,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
   postgres do
     table "campaigns"
@@ -13,15 +17,51 @@ defmodule CheerfulDonor.Giving.Campaign do
     defaults [
       :read,
       :destroy,
-      create: [:title, :description, :goal_amount, :is_active, :church_id],
+      create: [:title, :description, :goal_amount, :is_active, :church_id, :slug],
       update: [:title, :description, :goal_amount, :is_active]
     ]
+
+    read :by_slug do
+      argument :slug, :string, allow_nil?: false
+      get? true
+      filter expr(slug == ^arg(:slug))
+    end
+
+    read :list_active do
+      filter expr(is_active == true)
+      prepare build(load: [:church])
+    end
+
+    read :list_for_church do
+      argument :church_id, :uuid
+
+      filter expr(church_id == ^arg(:church_id))
+    end
+  end
+
+  policies do
+    policy action_type(:create) do
+      authorize_if expr(^actor(:role) == :admin)
+    end
+
+    policy action_type([:update, :destroy]) do
+      authorize_if expr(^actor(:role) == :admin)
+    end
+
+    policy action_type(:read) do
+      authorize_if always()
+    end
   end
 
   attributes do
     uuid_primary_key :id
 
     attribute :title, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :slug, :string do
       allow_nil? false
       public? true
     end
@@ -57,4 +97,7 @@ defmodule CheerfulDonor.Giving.Campaign do
     has_many :donation_intents, CheerfulDonor.Giving.DonationIntent
   end
 
+  identities do
+    identity :unique_slug, [:slug]
+  end
 end

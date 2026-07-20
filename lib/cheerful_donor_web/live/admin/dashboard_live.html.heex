@@ -1,0 +1,94 @@
+<Layouts.admin flash={@flash} current_user={@current_user}>
+  <%= if @needs_onboarding do %>
+    <div class="mx-auto mt-12 max-w-xl text-center">
+      <h1 class="font-display text-3xl font-semibold text-primary">Welcome</h1>
+      <p class="mt-3 text-base-content/70">
+        Create your church profile to start accepting donations.
+      </p>
+      <.link
+        navigate={~p"/admin/church/new"}
+        class="cd-cta mt-8 inline-flex min-h-12 items-center justify-center rounded-lg bg-primary px-6 font-semibold text-primary-content hover:brightness-110"
+      >
+        Create church
+      </.link>
+    </div>
+  <% else %>
+    <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="font-display text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
+          {@church.name}
+        </h1>
+        <p class="mt-1 text-sm text-base-content/60">Admin dashboard</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <.link
+          navigate={~p"/admin/payouts"}
+          class="cd-cta inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content hover:brightness-110"
+        >
+          Manage payouts
+        </.link>
+        <.link
+          navigate={~p"/admin/campaigns/new"}
+          class="cd-cta inline-flex min-h-11 items-center rounded-lg border border-base-300 bg-base-100 px-4 text-sm font-semibold hover:bg-base-200"
+        >
+          New campaign
+        </.link>
+      </div>
+    </header>
+
+    <div class="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <.stat label="Total raised" value={"₦#{@stats.total_amount}"} />
+      <.stat label="Donations" value={to_string(@stats.donation_count)} />
+      <.stat label="Active campaigns" value={to_string(@stats.active_campaigns)} />
+    </div>
+
+    <section class="mb-10">
+      <h2 class="font-display mb-4 text-xl font-semibold">Campaigns</h2>
+      <ul class="divide-y divide-base-300">
+        <%= for campaign <- @campaigns do %>
+          <li class="flex items-center justify-between gap-4 py-4">
+            <.link
+              navigate={~p"/admin/campaigns/#{campaign.id}"}
+              class="font-medium hover:text-primary"
+            >
+              {campaign.title}
+            </.link>
+            <span class={[
+              "text-sm",
+              campaign.is_active && "text-success",
+              !campaign.is_active && "text-base-content/50"
+            ]}>
+              {if(campaign.is_active, do: "Active", else: "Inactive")}
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="font-display mb-4 text-xl font-semibold">Recent donations</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-base-300 text-left text-xs uppercase tracking-wide text-base-content/50">
+              <th class="p-2">Amount</th>
+              <th class="p-2">Campaign</th>
+              <th class="p-2">Status</th>
+              <th class="p-2">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= for donation <- @recent_donations do %>
+              <tr class="border-b border-base-300/70">
+                <td class="p-2">₦{donation.amount_paid || donation.amount}</td>
+                <td class="p-2">{donation.campaign && donation.campaign.title}</td>
+                <td class="p-2">{donation.status}</td>
+                <td class="p-2">{donation.inserted_at}</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+</Layouts.admin>

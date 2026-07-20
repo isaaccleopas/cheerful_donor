@@ -1,86 +1,198 @@
 defmodule CheerfulDonorWeb.Layouts do
   @moduledoc """
-  This module holds layouts and related functionality
-  used by your application.
+  Application layouts for marketing, donor, and admin surfaces.
   """
   use CheerfulDonorWeb, :html
 
-  # Embed all files in layouts/* within this module.
-  # The default root.html.heex file contains the HTML
-  # skeleton of your application, namely HTML headers
-  # and other static content.
   embed_templates "layouts/*"
 
-  @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
-
-  ## Examples
-
-      <Layouts.app flash={@flash}>
-        <h1>Content</h1>
-      </Layouts.app>
-
-  """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  attr :current_scope, :map,
-    default: nil,
-    doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
-
+  attr :flash, :map, required: true
+  attr :current_user, :map, default: nil
+  attr :current_scope, :map, default: nil
   slot :inner_block, required: true
 
   def app(assigns) do
+    marketing(assigns)
+  end
+
+  attr :flash, :map, required: true
+  attr :current_user, :map, default: nil
+  slot :inner_block, required: true
+
+  def marketing(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
+    <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
+      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <.link
+            navigate={~p"/"}
+            class="font-display text-xl font-semibold tracking-tight text-primary cd-nav-link"
+          >
+            Cheerful Donor
+          </.link>
+
+          <nav class="flex items-center gap-2 sm:gap-4">
+            <.link
+              navigate={~p"/campaigns"}
+              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+            >
+              Campaigns
+            </.link>
             <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+            <%= if @current_user do %>
+              <.link
+                href={~p"/sign-out"}
+                class="cd-nav-link text-sm font-medium text-base-content/70 hover:text-error"
+              >
+                Sign out
+              </.link>
+            <% else %>
+              <.link
+                navigate={~p"/sign-in"}
+                class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+              >
+                Sign in
+              </.link>
+              <.link
+                navigate={~p"/campaigns"}
+                class="cd-cta inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content shadow-sm hover:brightness-110"
+              >
+                Give
+              </.link>
+            <% end %>
+          </nav>
+        </div>
+      </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+      <main class="flex-1">
         {render_slot(@inner_block)}
-      </div>
-    </main>
+      </main>
 
-    <.flash_group flash={@flash} />
+      <footer class="border-t border-base-300/60 py-8 text-center text-sm text-base-content/60">
+        <p class="font-display text-base text-base-content/80">Cheerful Donor</p>
+        <p class="mt-1">Give freely. Support what matters.</p>
+      </footer>
+
+      <.flash_group flash={@flash} />
+    </div>
     """
   end
 
-  @doc """
-  Shows the flash group with standard titles and content.
+  attr :flash, :map, required: true
+  attr :current_user, :map, default: nil
+  slot :inner_block, required: true
 
-  ## Examples
+  def donor(assigns) do
+    ~H"""
+    <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
+      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <.link
+            navigate={~p"/donor/dashboard"}
+            class="font-display text-lg font-semibold text-primary cd-nav-link sm:text-xl"
+          >
+            Cheerful Donor
+          </.link>
+
+          <nav class="flex items-center gap-2 sm:gap-4">
+            <.link
+              navigate={~p"/donor/campaigns"}
+              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+            >
+              Campaigns
+            </.link>
+            <.link
+              navigate={~p"/donor/dashboard"}
+              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+            >
+              Dashboard
+            </.link>
+            <.theme_toggle />
+            <.link
+              href={~p"/sign-out"}
+              class="cd-nav-link text-sm font-medium text-base-content/70 hover:text-error"
+            >
+              Sign out
+            </.link>
+          </nav>
+        </div>
+      </header>
+
+      <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        {render_slot(@inner_block)}
+      </main>
 
       <.flash_group flash={@flash} />
-  """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+    </div>
+    """
+  end
+
+  attr :flash, :map, required: true
+  attr :current_user, :map, default: nil
+  slot :inner_block, required: true
+
+  def admin(assigns) do
+    ~H"""
+    <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
+      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <.link
+            navigate={~p"/admin/dashboard"}
+            class="font-display text-lg font-semibold text-primary cd-nav-link sm:text-xl"
+          >
+            Cheerful Donor
+            <span class="ml-1 text-xs font-sans font-medium uppercase tracking-wide text-base-content/50">
+              Admin
+            </span>
+          </.link>
+
+          <nav class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <.link
+              navigate={~p"/admin/dashboard"}
+              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+            >
+              Dashboard
+            </.link>
+            <.link
+              navigate={~p"/admin/campaigns"}
+              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+            >
+              Campaigns
+            </.link>
+            <.link
+              navigate={~p"/admin/payouts"}
+              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+            >
+              Payouts
+            </.link>
+            <.link
+              navigate={~p"/admin/payouts/bank-accounts"}
+              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary md:inline"
+            >
+              Banks
+            </.link>
+            <.theme_toggle />
+            <.link
+              href={~p"/sign-out"}
+              class="cd-nav-link text-sm font-medium text-base-content/70 hover:text-error"
+            >
+              Sign out
+            </.link>
+          </nav>
+        </div>
+      </header>
+
+      <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        {render_slot(@inner_block)}
+      </main>
+
+      <.flash_group flash={@flash} />
+    </div>
+    """
+  end
+
+  attr :flash, :map, required: true
+  attr :id, :string, default: "flash-group"
 
   def flash_group(assigns) do
     ~H"""
@@ -115,36 +227,37 @@ defmodule CheerfulDonorWeb.Layouts do
     """
   end
 
-  @doc """
-  Provides dark vs light theme toggle based on themes defined in app.css.
-
-  See <head> in root.html.heex which applies the theme before page load.
-  """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
+    <div class="relative flex flex-row items-center rounded-full border border-base-300 bg-base-200 transition-colors duration-200">
+      <div class="absolute h-full w-1/3 rounded-full border border-base-300 bg-base-100 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left] duration-200" />
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        type="button"
+        class="relative z-10 flex min-h-9 min-w-9 cursor-pointer items-center justify-center"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
+        aria-label="System theme"
       >
         <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        type="button"
+        class="relative z-10 flex min-h-9 min-w-9 cursor-pointer items-center justify-center"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
+        aria-label="Light theme"
       >
         <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
 
       <button
-        class="flex p-2 cursor-pointer w-1/3"
+        type="button"
+        class="relative z-10 flex min-h-9 min-w-9 cursor-pointer items-center justify-center"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
+        aria-label="Dark theme"
       >
         <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
