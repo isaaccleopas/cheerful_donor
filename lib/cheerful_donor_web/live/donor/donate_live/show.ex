@@ -17,6 +17,8 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
       |> Ash.Query.load(:church)
       |> Ash.read_one!()
 
+    stats = Giving.campaign_stats(campaign.id)
+
     user = socket.assigns.current_user
     user_id = user.id
 
@@ -32,7 +34,9 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
 
     socket =
       socket
+      |> assign(:page_title, campaign.title)
       |> assign(:campaign, campaign)
+      |> assign(:stats, stats)
       |> assign(:user_id, user_id)
       |> assign(:donor, donor)
       |> assign(:donation_type, :one_time)
@@ -47,6 +51,11 @@ defmodule CheerfulDonorWeb.Donor.DonateLive.Show do
     end
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("pick_amount", %{"amount" => amount}, socket) do
+    {:noreply, assign(socket, :amount, amount)}
   end
 
   @impl true

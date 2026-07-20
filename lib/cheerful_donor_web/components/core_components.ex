@@ -206,7 +206,7 @@ defmodule CheerfulDonorWeb.CoreComponents do
 
     ~H"""
     <div class="fieldset mb-2">
-      <label>
+      <label class="flex min-h-11 items-center gap-3 font-semibold text-base-content">
         <input
           type="hidden"
           name={@name}
@@ -214,17 +214,16 @@ defmodule CheerfulDonorWeb.CoreComponents do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <span class="label">
-          <input
-            type="checkbox"
-            id={@id}
-            name={@name}
-            value="true"
-            checked={@checked}
-            class={@class || "checkbox checkbox-sm"}
-            {@rest}
-          />{@label}
-        </span>
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class={@class || "checkbox checkbox-primary border-2"}
+          {@rest}
+        />
+        <span>{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -235,11 +234,14 @@ defmodule CheerfulDonorWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="cd-field-label">{@label}</span>
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[
+            @class || "cd-field select w-full border-2 bg-base-100 font-medium",
+            @errors != [] && (@error_class || "select-error border-error")
+          ]}
           multiple={@multiple}
           {@rest}
         >
@@ -256,13 +258,13 @@ defmodule CheerfulDonorWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="cd-field-label">{@label}</span>
         <textarea
           id={@id}
           name={@name}
           class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
+            @class || "cd-field cd-field-textarea textarea w-full border-2 bg-base-100 font-medium",
+            @errors != [] && (@error_class || "textarea-error border-error")
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -277,15 +279,15 @@ defmodule CheerfulDonorWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="cd-field-label">{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class || "cd-field input w-full border-2 bg-base-100 font-medium",
+            @errors != [] && (@error_class || "input-error border-error")
           ]}
           {@rest}
         />
@@ -298,7 +300,7 @@ defmodule CheerfulDonorWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+    <p class="mt-1.5 flex items-center gap-2 text-sm font-semibold text-error">
       <.icon name="hero-exclamation-circle" class="size-5" />
       {render_slot(@inner_block)}
     </p>

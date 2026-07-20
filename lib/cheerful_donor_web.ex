@@ -86,6 +86,7 @@ defmodule CheerfulDonorWeb do
       import Phoenix.HTML
       # Core UI components
       import CheerfulDonorWeb.CoreComponents
+      import CheerfulDonorWeb.CampaignComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

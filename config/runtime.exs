@@ -23,6 +23,13 @@ end
 config :cheerful_donor, CheerfulDonorWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+if config_env() == :dev do
+  if host = System.get_env("PHX_HOST") do
+    config :cheerful_donor, CheerfulDonorWeb.Endpoint,
+      url: [host: host, port: 443, scheme: "https"]
+  end
+end
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

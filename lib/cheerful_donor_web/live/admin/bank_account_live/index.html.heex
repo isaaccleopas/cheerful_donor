@@ -1,7 +1,7 @@
 <Layouts.admin flash={@flash} current_user={@current_user}>
   <%= if @live_action == :index do %>
-    <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <h1 class="font-display text-3xl font-semibold text-primary">Bank accounts</h1>
+    <header class="mb-8 flex flex-col gap-4 border-b-2 border-base-300 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <h1 class="cd-page-title text-3xl">Bank accounts</h1>
       <.link
         navigate={~p"/admin/payouts/bank-accounts/new"}
         class="cd-cta inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content hover:brightness-110"
@@ -10,19 +10,19 @@
       </.link>
     </header>
 
-    <ul class="divide-y divide-base-300">
+    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <%= for account <- @bank_accounts do %>
-        <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div class="font-medium">{account.bank_name}</div>
-            <div class="text-sm text-base-content/60">
+        <li class="cd-panel p-5">
+          <div class="mb-4 border-b-2 border-base-300 pb-3">
+            <div class="font-display text-lg font-bold">{account.bank_name}</div>
+            <div class="cd-muted mt-1 text-sm font-semibold">
               {account.account_name} · {account.account_number}
             </div>
           </div>
           <div class="flex gap-3">
             <.link
               navigate={~p"/admin/payouts/bank-accounts/#{account.id}/edit"}
-              class="text-sm font-medium text-primary hover:underline"
+              class="rounded-lg border-2 border-base-300 px-3 py-2 text-sm font-bold text-primary hover:bg-base-200"
             >
               Edit
             </.link>
@@ -31,7 +31,7 @@
               phx-click="delete"
               phx-value-id={account.id}
               data-confirm="Are you sure?"
-              class="text-sm font-medium text-error hover:underline"
+              class="rounded-lg border-2 border-error/50 px-3 py-2 text-sm font-bold text-error hover:bg-error/10"
             >
               Delete
             </button>
@@ -42,21 +42,21 @@
   <% end %>
 
   <%= if @live_action in [:new, :edit] do %>
-    <div class="mx-auto max-w-xl">
-      <h1 class="font-display mb-6 text-2xl font-semibold text-primary">
+    <div class="cd-form-panel mx-auto max-w-xl">
+      <h1 class="cd-page-title mb-6 border-b-2 border-base-300 pb-3 text-2xl">
         {if(@live_action == :edit, do: "Edit bank account", else: "Add bank account")}
       </h1>
 
-      <.form for={@form} id="bank-account-form" phx-submit="save" class="space-y-4">
-        <.input field={@form[:bank_name]} label="Bank name" class="min-h-11" />
-        <.input field={@form[:bank_code]} label="Bank code" class="min-h-11" />
-        <.input field={@form[:account_name]} label="Account name" class="min-h-11" />
-        <.input field={@form[:account_number]} label="Account number" class="min-h-11" />
+      <.form for={@form} id="bank-account-form" phx-submit="save" class="cd-form">
+        <.input field={@form[:bank_name]} label="Bank name" />
+        <.input field={@form[:bank_code]} label="Bank code" />
+        <.input field={@form[:account_name]} label="Account name" />
+        <.input field={@form[:account_number]} label="Account number" />
 
-        <div class="flex justify-end gap-3 pt-2">
+        <div class="cd-form-actions">
           <.link
             navigate={~p"/admin/payouts/bank-accounts"}
-            class="min-h-11 inline-flex items-center text-sm font-medium hover:underline"
+            class="min-h-11 inline-flex items-center text-sm font-bold hover:underline"
           >
             Cancel
           </.link>

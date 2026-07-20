@@ -1,28 +1,24 @@
 <Layouts.admin flash={@flash} current_user={@current_user}>
-  <div class="mx-auto max-w-xl space-y-8">
-    <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <h1 class="font-display text-3xl font-semibold text-primary">Payouts</h1>
+  <div class="mx-auto max-w-4xl space-y-8">
+    <header class="flex flex-col gap-3 border-b-2 border-base-300 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <h1 class="cd-page-title text-3xl">Payouts</h1>
       <.link
         navigate={~p"/admin/payouts/history"}
-        class="cd-cta inline-flex min-h-11 items-center rounded-lg border border-base-300 px-4 text-sm font-semibold hover:bg-base-200"
+        class="cd-cta inline-flex min-h-11 items-center rounded-lg border-2 border-base-300 px-4 text-sm font-semibold hover:bg-base-200"
       >
         View history
       </.link>
     </header>
 
-    <div class="border-b border-base-300 pb-4">
-      <div class="text-xs uppercase tracking-wide text-base-content/50">Available balance</div>
-      <div class="mt-1 font-display text-2xl font-semibold">₦{@balance}</div>
+    <div class="cd-panel p-5">
+      <div class="cd-label">Available balance</div>
+      <div class="cd-stat-value mt-2 text-2xl sm:text-3xl">{format_money(@balance)}</div>
     </div>
 
-    <.form for={@form} id="payout-form" phx-submit="payout" class="space-y-4">
+    <.form for={@form} id="payout-form" phx-submit="payout" class="cd-form-panel cd-form">
       <div>
-        <label for="bank_account_id" class="mb-1.5 block text-sm font-medium">Bank account</label>
-        <select
-          id="bank_account_id"
-          name="bank_account_id"
-          class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-        >
+        <label for="bank_account_id" class="cd-field-label">Bank account</label>
+        <select id="bank_account_id" name="bank_account_id" class="cd-field">
           <%= for acc <- @bank_accounts do %>
             <option value={acc.id}>{acc.bank_name} — {acc.account_number}</option>
           <% end %>
@@ -30,14 +26,8 @@
       </div>
 
       <div>
-        <label for="amount" class="mb-1.5 block text-sm font-medium">Amount</label>
-        <input
-          id="amount"
-          type="number"
-          name="amount"
-          value={@balance}
-          class="w-full min-h-11 rounded-lg border border-base-300 bg-base-100 px-4"
-        />
+        <label for="amount" class="cd-field-label">Amount</label>
+        <input id="amount" type="number" name="amount" value={@balance} class="cd-field" />
       </div>
 
       <button
@@ -47,5 +37,42 @@
         Withdraw
       </button>
     </.form>
+
+    <section class="cd-panel p-6">
+      <h2 class="cd-section-title mb-4 border-b-2 border-base-300 pb-3">Recent payouts</h2>
+      <%= if @payouts == [] do %>
+        <p class="cd-muted text-sm font-medium">No payouts yet.</p>
+      <% else %>
+        <div class="cd-table">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left">
+                  <th class="px-3 py-3">Amount</th>
+                  <th class="px-3 py-3">Bank</th>
+                  <th class="px-3 py-3">Status</th>
+                  <th class="px-3 py-3">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for payout <- Enum.take(@payouts, 6) do %>
+                  <tr>
+                    <td class="px-3 py-3 font-semibold">{format_money(payout.amount)}</td>
+                    <td class="px-3 py-3 font-medium">
+                      {payout.bank_account &&
+                        "#{payout.bank_account.bank_name} (#{payout.bank_account.account_number})"}
+                    </td>
+                    <td class="px-3 py-3">
+                      <span class={status_badge_class(payout.status)}>{payout.status}</span>
+                    </td>
+                    <td class="px-3 py-3 font-medium">{format_datetime(payout.inserted_at)}</td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% end %>
+    </section>
   </div>
 </Layouts.admin>

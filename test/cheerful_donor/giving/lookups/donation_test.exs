@@ -3,6 +3,7 @@ defmodule CheerfulDonor.Giving.Lookups.DonationTest do
 
   alias CheerfulDonor.Giving.Lookups.Donation
   alias CheerfulDonor.Giving.InitiateDonation.DonationInitiatedV1
+  alias CheerfulDonor.Giving.ConfirmDonation.DonationConfirmedV1
   alias CheerfulDonor.Giving.FailDonation.DonationFailedV1
   alias CheerfulDonor.Accounts.{User, Church}
   alias CheerfulDonor.Giving.Campaign
@@ -101,5 +102,51 @@ defmodule CheerfulDonor.Giving.Lookups.DonationTest do
 
     assert {:ok, lookup} = Ash.get(Donation, reference, authorize?: false)
     assert lookup.status == "failed"
+  end
+
+  test "DonationConfirmedV1 creates donation and updates campaign stats", %{
+    church: church,
+    campaign: campaign
+  } do
+    reference = Ecto.UUID.generate()
+
+    :ok =
+      Donation.handle(
+        %DonationInitiatedV1{
+          reference: reference,
+          amount: 7500,
+          currency: "NGN",
+          donor_id: nil,
+          campaign_id: campaign.id,
+          church_id: church.id,
+          guest_email: "guest@example.com",
+          guest_name: "Guest",
+          type: "one_time",
+          interval: nil,
+          initiated_at: DateTime.utc_now() |> DateTime.to_iso8601()
+        },
+        %{}
+      )
+
+    assert :ok =
+             Donation.handle(
+               %DonationConfirmedV1{
+                 reference: reference,
+                 amount: 7500,
+                 paid_at: DateTime.utc_now() |> DateTime.to_iso8601(),
+                 channel: "card",
+                 customer_code: nil,
+                 authorization_code: nil,
+                 raw: %{}
+               },
+               %{}
+             )
+
+    assert {:ok, lookup} = Ash.get(Donation, reference, authorize?: false)
+    assert lookup.status == "successful"
+
+    stats = CheerfulDonor.Giving.campaign_stats(campaign.id)
+    assert stats.raised >= 7500
+    assert stats.donor_count >= 1
   end
 end

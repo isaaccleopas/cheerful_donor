@@ -121,6 +121,7 @@ defmodule CheerfulDonorWeb.Router do
 
   scope "/paystack", CheerfulDonorWeb do
     pipe_through :paystack_webhook
+    get "/webhook", PaystackWebhookController, :ping
     post "/webhook", PaystackWebhookController, :handle
   end
 

@@ -7,6 +7,8 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
   alias CheerfulDonor.Billing
   alias CheerfulDonor.Payments
 
+  @recent_limit 10
+
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
@@ -42,6 +44,9 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
        |> assign(:transactions, transactions)
        |> assign(:totals, totals)
        |> assign(:tab, "donations")
+       |> assign(:show_all_donations?, false)
+       |> assign(:show_all_subscriptions?, false)
+       |> assign(:show_all_transactions?, false)
        |> assign(:loading, false)}
     else
       {:ok, redirect(socket, to: "/login")}
@@ -67,8 +72,7 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
       |> Enum.map(&(&1.amount_paid || &1.amount))
       |> Enum.sum()
 
-    active_subs = 0
-    %{total_given: total_given, this_month: this_month, active_subscriptions: active_subs}
+    %{total_given: total_given, this_month: this_month, active_subscriptions: 0}
   end
 
   defp calc_totals(_), do: %{total_given: 0, this_month: 0, active_subscriptions: 0}
@@ -76,6 +80,26 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
   @impl true
   def handle_event("set_tab", %{"tab" => tab}, socket) do
     {:noreply, assign(socket, :tab, tab)}
+  end
+
+  @impl true
+  def handle_event("toggle_show_all", %{"section" => section}, socket) do
+    socket =
+      case section do
+        "donations" ->
+          assign(socket, :show_all_donations?, !socket.assigns.show_all_donations?)
+
+        "subscriptions" ->
+          assign(socket, :show_all_subscriptions?, !socket.assigns.show_all_subscriptions?)
+
+        "transactions" ->
+          assign(socket, :show_all_transactions?, !socket.assigns.show_all_transactions?)
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -96,24 +120,24 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
   @impl true
   def handle_event("cancel_subscription", %{"id" => id}, socket) do
     actor = socket.assigns.current_user
+    donor = socket.assigns.donor
 
-    sub =
-      CheerfulDonor.Billing.Subscription
-      |> Ash.get!(id, actor: actor)
-
-    case CheerfulDonor.Billing.cancel_subscription(sub) do
-      {:ok, _} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Subscription cancelled")
-         |> reload_subscriptions()}
+    with {:ok, sub} <- Ash.get(CheerfulDonor.Billing.Subscription, id, actor: actor),
+         true <- is_nil(donor) or sub.donor_id == donor.id,
+         {:ok, _} <- CheerfulDonor.Billing.cancel_subscription(sub) do
+      {:noreply,
+       socket
+       |> put_flash(:info, "Subscription cancelled")
+       |> reload_subscriptions()}
+    else
+      false ->
+        {:noreply, put_flash(socket, :error, "You can only cancel your own subscriptions")}
 
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to cancel subscription")}
     end
   end
 
-  # PubSub updates for donations and recurring payments
   @impl true
   def handle_info({:donation_confirmed, _donation_id}, socket) do
     donor = socket.assigns.donor
@@ -150,10 +174,13 @@ defmodule CheerfulDonorWeb.Donor.DashboardLive do
 
   defp reload_subscriptions(socket) do
     donor = socket.assigns.donor
-
-    subs =
-      CheerfulDonor.Billing.get_subscriptions_for_donor(donor.id)
-
+    subs = Billing.get_subscriptions_for_donor(donor.id)
     assign(socket, :subscriptions, subs)
   end
+
+  def visible_items(items, show_all?) when is_list(items) do
+    if show_all?, do: items, else: Enum.take(items, @recent_limit)
+  end
+
+  def visible_items(_, _), do: []
 end

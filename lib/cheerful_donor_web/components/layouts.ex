@@ -22,21 +22,21 @@ defmodule CheerfulDonorWeb.Layouts do
   def marketing(assigns) do
     ~H"""
     <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
-      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+      <header class="sticky top-0 z-40 border-b-2 border-base-300 bg-base-100/95 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <.link
             navigate={~p"/"}
-            class="font-display text-xl font-semibold tracking-tight text-primary cd-nav-link"
+            class="font-display text-xl font-bold tracking-tight text-primary cd-nav-link"
           >
             Cheerful Donor
           </.link>
 
-          <nav class="flex items-center gap-2 sm:gap-4">
+          <nav class="flex items-center gap-2 sm:gap-3">
             <.link
               navigate={~p"/campaigns"}
-              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+              class="cd-nav-link hidden text-sm font-semibold text-base-content/85 hover:text-primary md:inline"
             >
-              Campaigns
+              Explore
             </.link>
             <.theme_toggle />
             <%= if @current_user do %>
@@ -48,6 +48,12 @@ defmodule CheerfulDonorWeb.Layouts do
               </.link>
             <% else %>
               <.link
+                navigate={~p"/register"}
+                class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+              >
+                Start a campaign
+              </.link>
+              <.link
                 navigate={~p"/sign-in"}
                 class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
               >
@@ -55,9 +61,9 @@ defmodule CheerfulDonorWeb.Layouts do
               </.link>
               <.link
                 navigate={~p"/campaigns"}
-                class="cd-cta inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-content shadow-sm hover:brightness-110"
+                class="cd-cta inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-content shadow-sm hover:brightness-110"
               >
-                Give
+                Donate
               </.link>
             <% end %>
           </nav>
@@ -68,9 +74,9 @@ defmodule CheerfulDonorWeb.Layouts do
         {render_slot(@inner_block)}
       </main>
 
-      <footer class="border-t border-base-300/60 py-8 text-center text-sm text-base-content/60">
-        <p class="font-display text-base text-base-content/80">Cheerful Donor</p>
-        <p class="mt-1">Give freely. Support what matters.</p>
+      <footer class="border-t-2 border-base-300 py-8 text-center text-sm text-base-content/70">
+        <p class="font-display text-base font-semibold text-base-content">Cheerful Donor</p>
+        <p class="mt-1 font-medium">Give freely. Support what matters.</p>
       </footer>
 
       <.flash_group flash={@flash} />
@@ -85,11 +91,11 @@ defmodule CheerfulDonorWeb.Layouts do
   def donor(assigns) do
     ~H"""
     <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
-      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+      <header class="sticky top-0 z-40 border-b-2 border-base-300 bg-base-100/95 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <.link
             navigate={~p"/donor/dashboard"}
-            class="font-display text-lg font-semibold text-primary cd-nav-link sm:text-xl"
+            class="font-display text-lg font-bold text-primary cd-nav-link sm:text-xl"
           >
             Cheerful Donor
           </.link>
@@ -97,13 +103,13 @@ defmodule CheerfulDonorWeb.Layouts do
           <nav class="flex items-center gap-2 sm:gap-4">
             <.link
               navigate={~p"/donor/campaigns"}
-              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+              class="cd-nav-link text-sm font-semibold text-base-content/85 hover:text-primary"
             >
               Campaigns
             </.link>
             <.link
               navigate={~p"/donor/dashboard"}
-              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary sm:inline"
+              class="cd-nav-link hidden text-sm font-semibold text-base-content/85 hover:text-primary sm:inline"
             >
               Dashboard
             </.link>
@@ -134,14 +140,14 @@ defmodule CheerfulDonorWeb.Layouts do
   def admin(assigns) do
     ~H"""
     <div class="min-h-dvh flex flex-col bg-base-100 text-base-content">
-      <header class="sticky top-0 z-40 border-b border-base-300/60 bg-base-100/90 backdrop-blur-md">
+      <header class="sticky top-0 z-40 border-b-2 border-base-300 bg-base-100/95 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <.link
             navigate={~p"/admin/dashboard"}
-            class="font-display text-lg font-semibold text-primary cd-nav-link sm:text-xl"
+            class="font-display text-lg font-bold text-primary cd-nav-link sm:text-xl"
           >
             Cheerful Donor
-            <span class="ml-1 text-xs font-sans font-medium uppercase tracking-wide text-base-content/50">
+            <span class="ml-1 text-xs font-sans font-bold uppercase tracking-wider text-base-content/60">
               Admin
             </span>
           </.link>
@@ -149,25 +155,25 @@ defmodule CheerfulDonorWeb.Layouts do
           <nav class="flex flex-wrap items-center gap-2 sm:gap-3">
             <.link
               navigate={~p"/admin/dashboard"}
-              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+              class="cd-nav-link text-sm font-semibold text-base-content/85 hover:text-primary"
             >
               Dashboard
             </.link>
             <.link
               navigate={~p"/admin/campaigns"}
-              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+              class="cd-nav-link text-sm font-semibold text-base-content/85 hover:text-primary"
             >
               Campaigns
             </.link>
             <.link
               navigate={~p"/admin/payouts"}
-              class="cd-nav-link text-sm font-medium text-base-content/80 hover:text-primary"
+              class="cd-nav-link text-sm font-semibold text-base-content/85 hover:text-primary"
             >
               Payouts
             </.link>
             <.link
               navigate={~p"/admin/payouts/bank-accounts"}
-              class="cd-nav-link hidden text-sm font-medium text-base-content/80 hover:text-primary md:inline"
+              class="cd-nav-link hidden text-sm font-semibold text-base-content/85 hover:text-primary md:inline"
             >
               Banks
             </.link>
